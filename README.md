@@ -1,6 +1,9 @@
-# nova-stack
+# nova-stack-base
 
-基于 pnpm monorepo 的全栈多端项目：NestJS 后端 + Vue3 Admin + uni-app C 端，共享类型包 `@nova/shared-types`。
+基于 pnpm monorepo 的全栈多端 **脚手架**：NestJS 后端 + Vue3 Admin + uni-app C 端，共享类型包 `@nova/shared-types`。
+
+> **从本仓库创建业务项目、环境隔离、单向同步脚手架更新** → 见 **[SCAFFOLD.md](./SCAFFOLD.md)**  
+> GitHub：**Use this template** 生成新项目（不要 Fork 自己的仓库）。
 
 ## Monorepo 结构
 
