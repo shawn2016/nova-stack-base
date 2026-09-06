@@ -1,6 +1,9 @@
-# 脚手架使用说明（nova-stack-base）
+# 脚手架使用说明（nova-stack / nova-stack-base）
 
-本仓库是 **全栈 monorepo 脚手架**，不是具体业务项目。
+本仓库族是 **全栈 monorepo 脚手架**，不是具体业务项目。
+
+- **维护仓库**：`shawn2016/nova-stack`（日常开发、Comet、Verify）
+- **对外 Template**：[`shawn2016/nova-stack-base`](https://github.com/shawn2016/nova-stack-base) — 业务项目用 **Use this template** 创建
 
 - **脚手架**：维护通用能力（RBAC、Verify、E2E、Comet、规范、ArtListPanel 等）
 - **业务项目**：从本仓库 **Template 生成** 后独立演进；业务需求 **不回灌** 脚手架
