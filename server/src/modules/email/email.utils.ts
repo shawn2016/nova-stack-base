@@ -21,10 +21,7 @@ export function parseEmailConfig(config: string): Record<string, unknown> {
   }
 }
 
-export function renderEmailTemplate(
-  template: string,
-  params: Record<string, string>,
-): string {
+export function renderEmailTemplate(template: string, params: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (_, key: string) => {
     if (!(key in params)) {
       throw new BadRequestException(`Missing template param: ${key}`);

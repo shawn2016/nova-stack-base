@@ -13,7 +13,7 @@ export interface SmsChannelListItem {
   updatedAt: string;
 }
 
-export interface SmsChannelDetail extends SmsChannelListItem {}
+export type SmsChannelDetail = SmsChannelListItem;
 
 export interface CreateSmsChannelDto {
   name: string;
@@ -43,7 +43,7 @@ export interface SmsTemplateListItem {
   updatedAt: string;
 }
 
-export interface SmsTemplateDetail extends SmsTemplateListItem {}
+export type SmsTemplateDetail = SmsTemplateListItem;
 
 export interface CreateSmsTemplateDto {
   code: string;

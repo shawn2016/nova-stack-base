@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
+  MemberUserEntity,
   SysMenuEntity,
   SysPermissionEntity,
   SysRoleEntity,
@@ -25,6 +26,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     IpBlacklistModule,
     OnlineSessionModule,
     TypeOrmModule.forFeature([
+      MemberUserEntity,
       SysUserEntity,
       SysUserRoleEntity,
       SysRoleEntity,

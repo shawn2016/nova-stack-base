@@ -1,11 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import {
-  SysConfigEntity,
-  SysFileEntity,
-  SysUserEntity,
-} from '../../database/entities';
+import { SysConfigEntity, SysFileEntity, SysUserEntity } from '../../database/entities';
 import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
 import { CosStorageService } from './storage/cos-storage.service';

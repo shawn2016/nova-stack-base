@@ -5,11 +5,11 @@
   "scripts": {
     "build": "pnpm -r build",
     "build:shared-types": "pnpm --filter @nova/shared-types build",
-    "test": "pnpm --filter @nova/shared-types test && pnpm --filter @nova/server test && pnpm --filter @nova/server test:e2e",
+    "test": "pnpm --filter @nova/shared-types test && pnpm --filter @nova/server test && pnpm --filter @nova/server test:e2e && pnpm test:clients",
     "verify": "node scripts/verify.mjs",
     "verify:hub": "pnpm --filter @nova/verify-hub dev",
     "verify:test": "node --test scripts/verify-contract.test.mjs && pnpm --filter @nova/verify-hub test",
-    "verify:tier:static": "pnpm run verify:test && pnpm --filter @nova/verify-hub typecheck && pnpm --filter @nova/shared-types test && pnpm run build:shared-types",
+    "verify:tier:static": "pnpm lint && pnpm typecheck && pnpm test:clients && pnpm run verify:test && pnpm --filter @nova/verify-hub typecheck && pnpm --filter @nova/shared-types test && pnpm run build:shared-types",
     "verify:tier:api-e2e": "pnpm --filter @nova/server exec jest --config ./test/jest-e2e.json --runInBand --json --outputFile=../.verify/jest-e2e-report.json",
     "verify:tier:browser-smoke": "pnpm exec playwright test -c e2e/playwright.config.ts",
     "verify:scan-pages": "node scripts/verify-page-scan.mjs",
@@ -18,22 +18,40 @@
     "predev:all": "pnpm run predev",
     "dev": "concurrently \"pnpm --filter @nova/shared-types dev\" \"pnpm --filter @nova/server dev\" \"pnpm --filter @nova/admin dev\"",
     "dev:all": "concurrently \"pnpm --filter @nova/server dev\" \"pnpm --filter @nova/admin dev\" \"pnpm --filter @nova/uni-app dev:h5\"",
-    "lint": "eslint server/src packages/shared-types/src",
+    "lint": "eslint server/src packages/shared-types/src admin/src uni-app/src --max-warnings=0",
     "format": "prettier --write .",
-    "seed": "pnpm --filter @nova/server seed"
+    "seed": "pnpm --filter @nova/server seed",
+    "typecheck": "pnpm run build:shared-types && pnpm -r --if-present typecheck",
+    "test:clients": "vitest run --config admin/vitest.config.ts && vitest run --config uni-app/vitest.config.ts",
+    "format:check": "prettier --check \"server/src/**/*.{ts,json}\" \"packages/shared-types/src/**/*.ts\" \"admin/src/**/*.{ts,vue}\" \"uni-app/src/**/*.{ts,vue}\"",
+    "test:integration": "node scripts/run-foundation-integration.mjs",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm verify:test && pnpm build"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@playwright/test": "^1.51.0",
     "concurrently": "^9.1.2",
     "eslint": "^9.17.0",
+    "eslint-plugin-vue": "^9.27.0",
     "globals": "^15.14.0",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.9.0",
+    "vitest": "^3.0.5",
+    "vue-eslint-parser": "^9.4.3",
     "yaml": "^2.7.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24 <25"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "pnpm": {
+    "packageExtensions": {
+      "@dcloudio/uni-mp-vite@3.0.0-5020420260813003": {
+        "dependencies": {
+          "estree-walker": "2.0.2"
+        }
+      }
+    }
   }
 }

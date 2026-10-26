@@ -9,7 +9,6 @@ import {
   SysMenuEntity,
   SysMessageEntity,
   SysNoticeEntity,
-  SysNoticeReadEntity,
   SysPermissionEntity,
   SysRegionEntity,
   SysDeptEntity,
@@ -265,26 +264,6 @@ const MENU_SEEDS: MenuSeed[] = [
     ],
   },
   {
-    name: '内容管理',
-    path: '/content',
-    component: null,
-    icon: 'ri:folder-line',
-    type: 'directory',
-    permissionCode: null,
-    sort: 2,
-    children: [
-      {
-        name: '文章管理',
-        path: '/content/articles',
-        component: 'views/content/articles/index',
-        icon: 'ri:article-line',
-        type: 'menu',
-        permissionCode: 'content:article:list',
-        sort: 1,
-      },
-    ],
-  },
-  {
     name: '基础设施',
     path: '/infra',
     component: null,
@@ -521,9 +500,7 @@ const DEV_DEPT_SEEDS: DeptSeed[] = [
   { name: '运营部', parentName: '总公司', sort: 2 },
 ];
 
-async function upsertDevOnlineSessionConfigs(
-  repo: Repository<SysConfigEntity>,
-): Promise<void> {
+async function upsertDevOnlineSessionConfigs(repo: Repository<SysConfigEntity>): Promise<void> {
   for (const seed of DEV_ONLINE_SESSION_CONFIG_SEEDS) {
     let config = await repo.findOne({ where: { configKey: seed.configKey } });
     if (!config) {
@@ -544,9 +521,7 @@ async function upsertDevOnlineSessionConfigs(
   }
 }
 
-async function upsertDevDataScopeConfigs(
-  repo: Repository<SysConfigEntity>,
-): Promise<void> {
+async function upsertDevDataScopeConfigs(repo: Repository<SysConfigEntity>): Promise<void> {
   for (const seed of DEV_DATA_SCOPE_CONFIG_SEEDS) {
     let config = await repo.findOne({ where: { configKey: seed.configKey } });
     if (!config) {
@@ -567,9 +542,7 @@ async function upsertDevDataScopeConfigs(
   }
 }
 
-async function upsertDevDeptConfigs(
-  repo: Repository<SysConfigEntity>,
-): Promise<void> {
+async function upsertDevDeptConfigs(repo: Repository<SysConfigEntity>): Promise<void> {
   for (const seed of DEV_DEPT_CONFIG_SEEDS) {
     let config = await repo.findOne({ where: { configKey: seed.configKey } });
     if (!config) {
@@ -590,9 +563,7 @@ async function upsertDevDeptConfigs(
   }
 }
 
-async function upsertDevUploadConfigs(
-  repo: Repository<SysConfigEntity>,
-): Promise<void> {
+async function upsertDevUploadConfigs(repo: Repository<SysConfigEntity>): Promise<void> {
   for (const seed of DEV_UPLOAD_CONFIG_SEEDS) {
     const exists = await repo.findOne({ where: { configKey: seed.configKey } });
     if (exists) {
@@ -610,15 +581,11 @@ async function upsertDevUploadConfigs(
   }
 }
 
-async function upsertDevDepts(
-  repo: Repository<SysDeptEntity>,
-): Promise<Map<string, string>> {
+async function upsertDevDepts(repo: Repository<SysDeptEntity>): Promise<Map<string, string>> {
   const nameToId = new Map<string, string>();
 
   for (const seed of DEV_DEPT_SEEDS) {
-    const parentId = seed.parentName
-      ? nameToId.get(seed.parentName) ?? '0'
-      : '0';
+    const parentId = seed.parentName ? (nameToId.get(seed.parentName) ?? '0') : '0';
 
     let dept = await repo.findOne({ where: { name: seed.name, parentId } });
     if (!dept) {
@@ -642,9 +609,7 @@ async function upsertDevDepts(
   return nameToId;
 }
 
-async function upsertDevSiteConfigs(
-  repo: Repository<SysConfigEntity>,
-): Promise<void> {
+async function upsertDevSiteConfigs(repo: Repository<SysConfigEntity>): Promise<void> {
   for (const seed of DEV_SITE_CONFIG_SEEDS) {
     let config = await repo.findOne({ where: { configKey: seed.configKey } });
     if (!config) {
@@ -737,7 +702,7 @@ async function upsertDevNotices(
     );
   }
 
-  let message = await messageRepo.findOne({ where: { title: 'Dev 欢迎消息' } });
+  const message = await messageRepo.findOne({ where: { title: 'Dev 欢迎消息' } });
   if (!message) {
     await messageRepo.save(
       messageRepo.create({
@@ -803,10 +768,7 @@ async function upsertDevDicts(
   }
 }
 
-async function upsertDevArticles(
-  repo: Repository<ArticleEntity>,
-  authorId: string,
-): Promise<void> {
+async function upsertDevArticles(repo: Repository<ArticleEntity>, authorId: string): Promise<void> {
   for (const seed of DEV_ARTICLE_SEEDS) {
     let article = await repo.findOne({ where: { title: seed.title } });
     if (!article) {
@@ -832,7 +794,7 @@ async function upsertDevArticles(
 }
 
 async function upsertDevJobs(repo: Repository<SysJobEntity>): Promise<void> {
-  let job = await repo.findOne({ where: { name: 'Demo 心跳' } });
+  const job = await repo.findOne({ where: { name: 'Demo 心跳' } });
   if (!job) {
     await repo.save(
       repo.create({
@@ -959,6 +921,15 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
     permissions.push(await upsertPermission(permissionRepo, seed));
   }
 
+  // 退役旧基座演示菜单；保留记录，重跑 seed 也不会重新开启。
+  for (const path of ['/content', '/content/articles']) {
+    const retiredMenu = await menuRepo.findOne({ where: { path } });
+    if (retiredMenu) {
+      retiredMenu.visible = 0;
+      retiredMenu.status = 0;
+      await menuRepo.save(retiredMenu);
+    }
+  }
   await upsertMenuTree(menuRepo, MENU_SEEDS);
 
   for (const permission of permissions) {
@@ -1021,7 +992,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
       await userRepo.save(adminUser);
     }
 
-    let member = await memberRepo.findOne({ where: { phone: DEV_MEMBER_PHONE } });
+    const member = await memberRepo.findOne({ where: { phone: DEV_MEMBER_PHONE } });
     if (!member) {
       await memberRepo.save(
         memberRepo.create({

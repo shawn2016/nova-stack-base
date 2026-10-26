@@ -1,11 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import type { UpdateDeptDto as IUpdateDeptDto } from '@nova/shared-types';
-import {
-  IsIn,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateDeptDto implements IUpdateDeptDto {
   @ApiPropertyOptional()

@@ -1,14 +1,6 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type {
-  DictDataListItem,
-  DictOption,
-  PaginationResult,
-} from '@nova/shared-types';
+import type { DictDataListItem, DictOption, PaginationResult } from '@nova/shared-types';
 import { Repository, In } from 'typeorm';
 import { SysDictDataEntity, SysDictTypeEntity } from '../../database/entities';
 import { CreateDictDataDto } from './dto/create-dict-data.dto';
@@ -59,15 +51,11 @@ export class DictDataService {
       .getManyAndCount();
 
     const typeIds = [...new Set(items.map((item) => item.typeId))];
-    const types = typeIds.length
-      ? await this.typeRepo.find({ where: { id: In(typeIds) } })
-      : [];
+    const types = typeIds.length ? await this.typeRepo.find({ where: { id: In(typeIds) } }) : [];
     const typeCodeMap = new Map(types.map((type) => [type.id, type.code]));
 
     return {
-      list: items.map((item) =>
-        this.toListItem(item, typeCodeMap.get(item.typeId)),
-      ),
+      list: items.map((item) => this.toListItem(item, typeCodeMap.get(item.typeId))),
       total,
       page,
       pageSize,
@@ -149,10 +137,7 @@ export class DictDataService {
     return entity;
   }
 
-  private toListItem(
-    entity: SysDictDataEntity,
-    typeCode?: string,
-  ): DictDataListItem {
+  private toListItem(entity: SysDictDataEntity, typeCode?: string): DictDataListItem {
     return {
       id: String(entity.id),
       typeId: String(entity.typeId),

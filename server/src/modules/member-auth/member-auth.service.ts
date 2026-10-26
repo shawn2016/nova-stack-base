@@ -1,21 +1,13 @@
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import type {
-  MemberInfo,
-  MemberLoginResponse,
-  TokenPair,
-} from '@nova/shared-types';
+import { randomUUID } from 'crypto';
+import type { MemberInfo, MemberLoginResponse, TokenPair } from '@nova/shared-types';
 import { Repository } from 'typeorm';
 import { JwtService } from '../../common/jwt/jwt.service';
 import { toApiId } from '../../common/utils/to-api-id';
 import { MemberUserEntity } from '../../database/entities';
-import { RedisService } from '../../redis/redis.service';
 import { parseDurationToSeconds } from '../auth/auth.service';
 import { MemberLoginDto } from './dto/login.dto';
 import { MemberRegisterDto } from './dto/register.dto';
@@ -26,7 +18,6 @@ export class MemberAuthService {
     @InjectRepository(MemberUserEntity)
     private readonly memberRepo: Repository<MemberUserEntity>,
     private readonly jwtService: JwtService,
-    private readonly redisService: RedisService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -39,10 +30,7 @@ export class MemberAuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const passwordValid = await bcrypt.compare(
-      dto.password,
-      member.passwordHash,
-    );
+    const passwordValid = await bcrypt.compare(dto.password, member.passwordHash);
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -86,7 +74,9 @@ export class MemberAuthService {
       throw new UnauthorizedException('Missing token');
     }
 
-    const payload = await this.jwtService.verifyToken(accessToken);
+    const payload = await this.jwtService.verifyToken(accessToken, 'access');
+    if (payload.type !== 'member') throw new UnauthorizedException('Invalid token type');
+    await this.jwtService.revokeSession(payload.sid);
     const ttl = Math.max(payload.exp - Math.floor(Date.now() / 1000), 1);
     await this.jwtService.blacklist(payload.jti, ttl);
 
@@ -94,17 +84,18 @@ export class MemberAuthService {
   }
 
   async refresh(refreshToken: string): Promise<TokenPair> {
-    const payload = await this.jwtService.verifyToken(refreshToken);
+    const payload = await this.jwtService.verifyToken(refreshToken, 'refresh');
 
     if (payload.type !== 'member') {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    await this.assertRefreshTokenValid(payload.sub, refreshToken);
+    await this.jwtService.assertSessionActive(payload, refreshToken);
 
     const accessToken = await this.jwtService.signAccessToken({
       userId: payload.sub,
       type: 'member',
+      sessionId: payload.sid,
     });
 
     return {
@@ -115,13 +106,16 @@ export class MemberAuthService {
   }
 
   private async issueTokenPair(userId: string): Promise<TokenPair> {
-    const accessToken = await this.jwtService.signAccessToken({
-      userId,
-      type: 'member',
-    });
+    const sessionId = randomUUID();
     const refreshToken = await this.jwtService.signRefreshToken({
       userId,
       type: 'member',
+      sessionId,
+    });
+    const accessToken = await this.jwtService.signAccessToken({
+      userId,
+      type: 'member',
+      sessionId,
     });
 
     return {
@@ -141,31 +135,7 @@ export class MemberAuthService {
   }
 
   private getAccessExpiresInSeconds(): number {
-    const raw =
-      this.configService.get<string>('jwt.accessExpiresIn') ?? '2h';
+    const raw = this.configService.get<string>('jwt.accessExpiresIn') ?? '2h';
     return parseDurationToSeconds(raw);
-  }
-
-  private async assertRefreshTokenValid(
-    userId: string,
-    refreshToken: string,
-  ): Promise<void> {
-    const skipExternal =
-      this.configService.get<boolean>('app.skipExternalServices') ?? false;
-    const redis = this.redisService.getClient();
-
-    if (!redis) {
-      if (!skipExternal) {
-        throw new UnauthorizedException('Auth service unavailable');
-      }
-      return;
-    }
-
-    const key = `refresh:member:${userId}`;
-    const stored = await redis.get(key);
-
-    if (stored !== refreshToken) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
   }
 }

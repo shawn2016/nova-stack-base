@@ -5,11 +5,7 @@ const EXCLUDED_PATHS = new Set(['/api/auth/login', '/api/auth/logout', '/api/hea
 const SENSITIVE_FIELDS = new Set(['password', 'oldPassword', 'newPassword']);
 const MAX_SUMMARY_LENGTH = 2000;
 
-export function shouldAuditOperLog(
-  method: string,
-  path: string,
-  userType?: string,
-): boolean {
+export function shouldAuditOperLog(method: string, path: string, userType?: string): boolean {
   if (!MUTATING_METHODS.has(method.toUpperCase())) {
     return false;
   }

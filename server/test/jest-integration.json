@@ -1,0 +1,9 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "setupFiles": ["<rootDir>/setup-unit.ts"],
+  "testMatch": ["<rootDir>/**/*.integration-spec.ts"],
+  "transform": {"^.+\\.(t|j)s$": "ts-jest"},
+  "moduleNameMapper": {"^@nova/shared-types$": "<rootDir>/../../packages/shared-types/dist/index.js"}
+}

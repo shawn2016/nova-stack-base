@@ -36,8 +36,7 @@ export class IpBlacklistService {
   ) {}
 
   isWhitelisted(ip: string): boolean {
-    const whitelist =
-      this.configService.get<string[]>('ipBlacklist.whitelist') ?? [];
+    const whitelist = this.configService.get<string[]>('ipBlacklist.whitelist') ?? [];
     return whitelist.includes(ip.trim());
   }
 
@@ -48,21 +47,25 @@ export class IpBlacklistService {
     }
 
     const redis = this.redisService.getClient();
+    const revision = redis ? ((await redis.get(this.revisionKey(normalized))) ?? '0') : '0';
+    const cacheKey = this.blockKey(normalized, revision);
     if (redis) {
-      const cached = await redis.get(this.blockKey(normalized));
-      if (cached) {
-        return { blocked: true, reason: 'Access denied: IP blocked' };
-      }
+      const cached = await redis.get(cacheKey);
+      if (cached !== null && ((await redis.get(this.revisionKey(normalized))) ?? '0') === revision)
+        return cached === '1'
+          ? { blocked: true, reason: 'Access denied: IP blocked' }
+          : { blocked: false };
     }
 
     const row = await this.blacklistRepo.findOne({
       where: { ip: normalized, status: 1 },
     });
     if (!row || this.isExpired(row.expiresAt)) {
+      if (redis) await redis.set(cacheKey, '0', 'EX', 60);
       return { blocked: false };
     }
 
-    await this.setRedisBlock(normalized, row.expiresAt);
+    if (redis) await redis.set(cacheKey, '1', 'EX', this.cacheTtl(row.expiresAt));
     return { blocked: true, reason: 'Access denied: IP blocked' };
   }
 
@@ -80,14 +83,12 @@ export class IpBlacklistService {
 
     const failKey = this.failKey(normalized);
     const count = await redis.incr(failKey);
-    const windowSec =
-      this.configService.get<number>('ipBlacklist.windowSec') ?? 300;
+    const windowSec = this.configService.get<number>('ipBlacklist.windowSec') ?? 300;
     if (count === 1) {
       await redis.expire(failKey, windowSec);
     }
 
-    const threshold =
-      this.configService.get<number>('ipBlacklist.failThreshold') ?? 10;
+    const threshold = this.configService.get<number>('ipBlacklist.failThreshold') ?? 10;
     if (count >= threshold) {
       await this.createAutoBan(normalized);
       await redis.del(failKey);
@@ -117,14 +118,12 @@ export class IpBlacklistService {
     }
 
     row = await this.blacklistRepo.save(row);
-    await this.setRedisBlock(ip, row.expiresAt);
+    await this.invalidateRedisBlock(ip);
   }
 
   async list(query: IpBlacklistListQuery): Promise<IpBlacklistListResult> {
     const { page = 1, pageSize = 10, keyword, source, status } = query;
-    const qb = this.blacklistRepo
-      .createQueryBuilder('b')
-      .orderBy('b.created_at', 'DESC');
+    const qb = this.blacklistRepo.createQueryBuilder('b').orderBy('b.created_at', 'DESC');
 
     if (keyword?.trim()) {
       qb.andWhere('(b.ip LIKE :kw OR b.remark LIKE :kw)', {
@@ -151,10 +150,7 @@ export class IpBlacklistService {
     };
   }
 
-  async createManual(
-    dto: CreateIpBlacklistDto,
-    userId: string,
-  ): Promise<IpBlacklistListItem> {
+  async createManual(dto: CreateIpBlacklistDto, userId: string): Promise<IpBlacklistListItem> {
     const ip = dto.ip.trim();
     if (!isIpv4(ip)) {
       throw new BadRequestException('Invalid IPv4 address');
@@ -188,14 +184,14 @@ export class IpBlacklistService {
     entity.createdBy = userId;
 
     const saved = await this.blacklistRepo.save(entity);
-    await this.setRedisBlock(ip, saved.expiresAt);
+    await this.invalidateRedisBlock(ip);
     return this.toListItem(saved);
   }
 
   async remove(id: string): Promise<void> {
     const row = await this.findEntityById(id);
     await this.blacklistRepo.remove(row);
-    await this.clearRedisBlock(row.ip);
+    await this.invalidateRedisBlock(row.ip);
   }
 
   async updateStatus(id: string, status: number): Promise<IpBlacklistListItem> {
@@ -207,11 +203,7 @@ export class IpBlacklistService {
     row.status = status;
     const saved = await this.blacklistRepo.save(row);
 
-    if (status === 1 && !this.isExpired(saved.expiresAt)) {
-      await this.setRedisBlock(saved.ip, saved.expiresAt);
-    } else {
-      await this.clearRedisBlock(saved.ip);
-    }
+    await this.invalidateRedisBlock(saved.ip);
 
     return this.toListItem(saved);
   }
@@ -228,36 +220,30 @@ export class IpBlacklistService {
     return expiresAt !== null && expiresAt.getTime() <= Date.now();
   }
 
-  private blockKey(ip: string): string {
-    return `ip:blacklist:${ip}`;
+  private blockKey(ip: string, revision: string): string {
+    return `ip:blacklist:${ip}:${revision}`;
+  }
+
+  private revisionKey(ip: string): string {
+    return `ip:blacklist:revision:${ip}`;
+  }
+
+  private cacheTtl(expiresAt: Date | null): number {
+    return expiresAt
+      ? Math.min(60, Math.max(1, Math.ceil((expiresAt.getTime() - Date.now()) / 1000)))
+      : 60;
   }
 
   private failKey(ip: string): string {
     return `ip:login-fail:${ip}`;
   }
 
-  private async setRedisBlock(ip: string, expiresAt: Date | null): Promise<void> {
+  private async invalidateRedisBlock(ip: string): Promise<void> {
     const redis = this.redisService.getClient();
-    if (!redis) {
-      return;
-    }
-
-    const key = this.blockKey(ip);
-    if (expiresAt) {
-      const ttlSec = Math.max(1, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
-      await redis.set(key, '1', 'EX', ttlSec);
-      return;
-    }
-
-    await redis.set(key, '1');
-  }
-
-  private async clearRedisBlock(ip: string): Promise<void> {
-    const redis = this.redisService.getClient();
-    if (!redis) {
-      return;
-    }
-    await redis.del(this.blockKey(ip));
+    if (!redis) return;
+    // Never publish from the mutation's captured row: a later SQL writer may
+    // already have committed. A reader loads current SQL in this new generation.
+    await redis.incr(this.revisionKey(ip));
   }
 
   private toListItem(row: SysIpBlacklistEntity): IpBlacklistListItem {

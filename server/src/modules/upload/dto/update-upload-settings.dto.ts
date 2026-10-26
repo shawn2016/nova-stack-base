@@ -1,14 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import type { UpdateUploadSettingsDto as IUpdateUploadSettingsDto } from '@nova/shared-types';
 import { Type } from 'class-transformer';
-import {
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  Min,
-  ValidateNested,
-} from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
 
 class UploadLocalSettingsDto {
   @ApiPropertyOptional()

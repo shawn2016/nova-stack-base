@@ -8,7 +8,7 @@ import type {
   SmsLogListItem,
   SmsTemplateListItem,
   UpdateSmsChannelDto,
-  UpdateSmsTemplateDto,
+  UpdateSmsTemplateDto
 } from '@nova/shared-types'
 import { request } from './request'
 
@@ -30,7 +30,7 @@ function buildListParams(params: { current?: number; size?: number; keyword?: st
   return {
     page: current,
     pageSize: size,
-    ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
+    ...(keyword?.trim() ? { keyword: keyword.trim() } : {})
   }
 }
 
@@ -39,7 +39,7 @@ function toTableResponse<T>(result: PaginationResult<T>) {
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }
 }
 
@@ -47,7 +47,7 @@ export function fetchSmsChannelList(params: SmsListQuery = {}) {
   return request<PaginationResult<SmsChannelListItem>>({
     url: '/sms/channels',
     method: 'GET',
-    params: buildListParams(params),
+    params: buildListParams(params)
   }).then(toTableResponse)
 }
 
@@ -67,7 +67,7 @@ export function fetchSmsTemplateList(params: SmsListQuery = {}) {
   return request<PaginationResult<SmsTemplateListItem>>({
     url: '/sms/templates',
     method: 'GET',
-    params: buildListParams(params),
+    params: buildListParams(params)
   }).then(toTableResponse)
 }
 
@@ -92,8 +92,8 @@ export function fetchSmsLogList(params: SmsLogListQuery = {}) {
       page: current,
       pageSize: size,
       ...(phone ? { phone } : {}),
-      ...(templateCode ? { templateCode } : {}),
-    },
+      ...(templateCode ? { templateCode } : {})
+    }
   }).then(toTableResponse)
 }
 

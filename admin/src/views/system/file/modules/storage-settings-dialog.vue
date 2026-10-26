@@ -111,7 +111,7 @@
 
   const dialogVisible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const form = reactive<UploadSettings>({
@@ -123,15 +123,15 @@
       bucket: '',
       accessKeyId: '',
       accessKeySecret: '',
-      publicBaseUrl: '',
+      publicBaseUrl: ''
     },
     tencent: {
       region: '',
       bucket: '',
       secretId: '',
       secretKey: '',
-      publicBaseUrl: '',
-    },
+      publicBaseUrl: ''
+    }
   })
 
   function formatSize(size: number): string {
@@ -150,15 +150,15 @@
         bucket: '',
         accessKeyId: '',
         accessKeySecret: '',
-        publicBaseUrl: '',
+        publicBaseUrl: ''
       },
       tencent: {
         region: '',
         bucket: '',
         secretId: '',
         secretKey: '',
-        publicBaseUrl: '',
-      },
+        publicBaseUrl: ''
+      }
     })
   }
 
@@ -173,7 +173,7 @@
         ElMessage.error(error instanceof Error ? error.message : '加载配置失败')
         dialogVisible.value = false
       }
-    },
+    }
   )
 
   async function handleSubmit() {
@@ -187,14 +187,14 @@
           ...form.aliyun,
           ...(form.aliyun.accessKeySecret === SECRET_MASK || !form.aliyun.accessKeySecret
             ? { accessKeySecret: undefined }
-            : {}),
+            : {})
         },
         tencent: {
           ...form.tencent,
           ...(form.tencent.secretKey === SECRET_MASK || !form.tencent.secretKey
             ? { secretKey: undefined }
-            : {}),
-        },
+            : {})
+        }
       }
       await updateUploadSettings(payload)
       ElMessage.success('存储配置已保存')

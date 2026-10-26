@@ -13,7 +13,7 @@ export interface EmailChannelListItem {
   updatedAt: string;
 }
 
-export interface EmailChannelDetail extends EmailChannelListItem {}
+export type EmailChannelDetail = EmailChannelListItem;
 
 export interface CreateEmailChannelDto {
   name: string;
@@ -44,7 +44,7 @@ export interface EmailTemplateListItem {
   updatedAt: string;
 }
 
-export interface EmailTemplateDetail extends EmailTemplateListItem {}
+export type EmailTemplateDetail = EmailTemplateListItem;
 
 export interface CreateEmailTemplateDto {
   code: string;

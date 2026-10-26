@@ -1,3 +1,4 @@
+import { PermissionCacheService } from '../../../common/jwt/permission-cache.service';
 import {
   BadRequestException,
   ConflictException,
@@ -32,6 +33,7 @@ const SUPER_ADMIN_ROLE_CODE = 'super_admin';
 @Injectable()
 export class RoleService {
   constructor(
+    private readonly permissionCache: PermissionCacheService,
     @InjectRepository(SysRoleEntity)
     private readonly roleRepo: Repository<SysRoleEntity>,
     @InjectRepository(SysRolePermissionEntity)
@@ -106,75 +108,78 @@ export class RoleService {
   }
 
   async update(id: string, dto: UpdateRoleDto): Promise<SysRoleDetail> {
-    const role = await this.findEntityById(id);
+    return this.permissionCache.mutate(async () => {
+      const role = await this.findEntityById(id);
 
-    if (dto.code !== undefined && dto.code !== role.code) {
-      const existing = await this.roleRepo.findOne({ where: { code: dto.code } });
-      if (existing) {
-        throw new ConflictException('Role code already exists');
+      if (dto.code !== undefined && dto.code !== role.code) {
+        const existing = await this.roleRepo.findOne({ where: { code: dto.code } });
+        if (existing) {
+          throw new ConflictException('Role code already exists');
+        }
+        role.code = dto.code;
       }
-      role.code = dto.code;
-    }
 
-    if (dto.name !== undefined) role.name = dto.name;
-    if (dto.status !== undefined) role.status = dto.status;
-    if (dto.sort !== undefined) role.sort = dto.sort;
+      if (dto.name !== undefined) role.name = dto.name;
+      if (dto.status !== undefined) role.status = dto.status;
+      if (dto.sort !== undefined) role.sort = dto.sort;
 
-    if (dto.dataScope !== undefined || dto.customDeptIds !== undefined) {
-      this.assertDataScopeEditable(role);
-      if (dto.dataScope !== undefined) {
-        role.dataScope = dto.dataScope;
+      if (dto.dataScope !== undefined || dto.customDeptIds !== undefined) {
+        this.assertDataScopeEditable(role);
+        if (dto.dataScope !== undefined) {
+          role.dataScope = dto.dataScope;
+        }
+        if (dto.customDeptIds !== undefined) {
+          await this.saveCustomDepts(role, dto.customDeptIds);
+        } else if (dto.dataScope !== undefined && dto.dataScope !== DATA_SCOPE_CUSTOM) {
+          await this.roleDeptRepo.delete({ roleId: role.id });
+        }
       }
-      if (dto.customDeptIds !== undefined) {
-        await this.saveCustomDepts(role, dto.customDeptIds);
-      } else if (dto.dataScope !== undefined && dto.dataScope !== DATA_SCOPE_CUSTOM) {
-        await this.roleDeptRepo.delete({ roleId: role.id });
-      }
-    }
 
-    const saved = await this.roleRepo.save(role);
-    return this.toDetail(saved);
+      const saved = await this.roleRepo.save(role);
+      return this.toDetail(saved);
+    });
   }
 
-  async assignPermissions(
-    id: string,
-    dto: AssignRolePermissionsDto,
-  ): Promise<SysRoleDetail> {
-    const role = await this.findEntityById(id);
+  async assignPermissions(id: string, dto: AssignRolePermissionsDto): Promise<SysRoleDetail> {
+    return this.permissionCache.mutate(async () => {
+      const role = await this.findEntityById(id);
 
-    const permissions = await this.permissionRepo.find({
-      where: { code: In(dto.permissionCodes) },
+      const permissions = await this.permissionRepo.find({
+        where: { code: In(dto.permissionCodes) },
+      });
+
+      if (permissions.length !== dto.permissionCodes.length) {
+        throw new BadRequestException('One or more permissions not found');
+      }
+
+      await this.rolePermissionRepo.delete({ roleId: role.id });
+
+      for (const permission of permissions) {
+        await this.rolePermissionRepo.save(
+          this.rolePermissionRepo.create({
+            roleId: role.id,
+            permissionId: permission.id,
+          }),
+        );
+      }
+
+      return this.toDetail(role);
     });
-
-    if (permissions.length !== dto.permissionCodes.length) {
-      throw new BadRequestException('One or more permissions not found');
-    }
-
-    await this.rolePermissionRepo.delete({ roleId: role.id });
-
-    for (const permission of permissions) {
-      await this.rolePermissionRepo.save(
-        this.rolePermissionRepo.create({
-          roleId: role.id,
-          permissionId: permission.id,
-        }),
-      );
-    }
-
-    return this.toDetail(role);
   }
 
   async remove(id: string): Promise<{ success: true }> {
-    const role = await this.findEntityById(id);
+    return this.permissionCache.mutate(async () => {
+      const role = await this.findEntityById(id);
 
-    if (role.code === SUPER_ADMIN_ROLE_CODE) {
-      throw new BadRequestException('Cannot delete super_admin role');
-    }
+      if (role.code === SUPER_ADMIN_ROLE_CODE) {
+        throw new BadRequestException('Cannot delete super_admin role');
+      }
 
-    await this.rolePermissionRepo.delete({ roleId: role.id });
-    await this.roleDeptRepo.delete({ roleId: role.id });
-    await this.roleRepo.remove(role);
-    return { success: true };
+      await this.rolePermissionRepo.delete({ roleId: role.id });
+      await this.roleDeptRepo.delete({ roleId: role.id });
+      await this.roleRepo.remove(role);
+      return { success: true };
+    });
   }
 
   private async findEntityById(id: string): Promise<SysRoleEntity> {
@@ -220,20 +225,13 @@ export class RoleService {
     }
   }
 
-  private async saveCustomDepts(
-    role: SysRoleEntity,
-    deptIds: string[],
-  ): Promise<void> {
+  private async saveCustomDepts(role: SysRoleEntity, deptIds: string[]): Promise<void> {
     if (role.dataScope !== DATA_SCOPE_CUSTOM && deptIds.length > 0) {
-      throw new BadRequestException(
-        'customDeptIds requires dataScope CUSTOM',
-      );
+      throw new BadRequestException('customDeptIds requires dataScope CUSTOM');
     }
     await this.roleDeptRepo.delete({ roleId: role.id });
     for (const deptId of deptIds) {
-      await this.roleDeptRepo.save(
-        this.roleDeptRepo.create({ roleId: role.id, deptId }),
-      );
+      await this.roleDeptRepo.save(this.roleDeptRepo.create({ roleId: role.id, deptId }));
     }
   }
 

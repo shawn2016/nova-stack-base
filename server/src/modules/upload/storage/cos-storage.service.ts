@@ -10,12 +10,7 @@ export class CosStorageService {
   private clientCache: { key: string; client: COS } | null = null;
 
   private getClient(config: TencentRuntimeConfig): COS {
-    const cacheKey = [
-      config.region,
-      config.bucket,
-      config.secretId,
-      config.secretKey,
-    ].join(':');
+    const cacheKey = [config.region, config.bucket, config.secretId, config.secretKey].join(':');
 
     if (this.clientCache?.key === cacheKey) {
       return this.clientCache.client;
@@ -24,6 +19,7 @@ export class CosStorageService {
     const client = new COS({
       SecretId: config.secretId,
       SecretKey: config.secretKey,
+      Timeout: 15000,
     });
     this.clientCache = { key: cacheKey, client };
     return client;

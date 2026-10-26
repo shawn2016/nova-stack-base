@@ -14,7 +14,13 @@ export class SysJobEntity {
   @Column({ type: 'varchar', length: 64, comment: '任务名称' })
   name!: string;
 
-  @Column({ type: 'varchar', length: 64, name: 'job_group', default: 'default', comment: '任务分组' })
+  @Column({
+    type: 'varchar',
+    length: 64,
+    name: 'job_group',
+    default: 'default',
+    comment: '任务分组',
+  })
   jobGroup!: string;
 
   @Column({ type: 'varchar', length: 128, name: 'invoke_target', comment: '调用目标' })

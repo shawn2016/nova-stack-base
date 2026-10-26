@@ -27,7 +27,7 @@
 
   const drawerVisible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const {
@@ -38,7 +38,7 @@
     getData,
     replaceSearchParams,
     handleSizeChange,
-    handleCurrentChange,
+    handleCurrentChange
   } = useTable({
     core: {
       apiFn: fetchJobLogList,
@@ -49,7 +49,7 @@
           prop: 'startTime',
           label: '开始时间',
           minWidth: 160,
-          formatter: (row: JobLogListItem) => new Date(row.startTime).toLocaleString('zh-CN'),
+          formatter: (row: JobLogListItem) => new Date(row.startTime).toLocaleString('zh-CN')
         },
         {
           prop: 'status',
@@ -57,13 +57,13 @@
           width: 80,
           formatter: (row: JobLogListItem) =>
             h(ElTag, { type: row.status === 1 ? 'success' : 'danger' }, () =>
-              row.status === 1 ? '成功' : '失败',
-            ),
+              row.status === 1 ? '成功' : '失败'
+            )
         },
         { prop: 'durationMs', label: '耗时(ms)', width: 100 },
-        { prop: 'message', label: '消息', minWidth: 140, showOverflowTooltip: true },
-      ],
-    },
+        { prop: 'message', label: '消息', minWidth: 140, showOverflowTooltip: true }
+      ]
+    }
   })
 
   watch(
@@ -73,6 +73,6 @@
         replaceSearchParams({ jobId, current: 1, size: pagination.size })
         getData()
       }
-    },
+    }
   )
 </script>

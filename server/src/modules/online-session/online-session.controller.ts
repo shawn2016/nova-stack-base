@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Query,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Param, Query, Req, UnauthorizedException } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { JwtService } from '../../common/jwt/jwt.service';
@@ -30,11 +22,7 @@ export class OnlineSessionController {
   @Get('online')
   @RequirePermission('system:session:list')
   @ApiOperation({ summary: '在线用户列表' })
-  list(
-    @Query() query: ListOnlineSessionsDto,
-    @Req() req: Request,
-    @CurrentUser() user: AuthUser,
-  ) {
+  list(@Query() query: ListOnlineSessionsDto, @Req() req: Request, @CurrentUser() user: AuthUser) {
     const token = this.extractBearerToken(req);
     const currentTokenId = this.jwtService.extractJti(token);
     return this.onlineSessionService.list(query, currentTokenId, user.userId);
@@ -43,13 +31,12 @@ export class OnlineSessionController {
   @Delete('online/:tokenId')
   @RequirePermission('system:session:kick')
   @ApiOperation({ summary: '强制踢下线' })
-  kick(@Param('tokenId') tokenId: string, @Req() req: Request) {
+  kick(@Param('tokenId') tokenId: string, @Req() req: Request, @CurrentUser() user: AuthUser) {
     const token = this.extractBearerToken(req);
     const operatorTokenId = this.jwtService.extractJti(token);
-    const raw =
-      this.configService.get<string>('jwt.accessExpiresIn') ?? '2h';
+    const raw = this.configService.get<string>('jwt.accessExpiresIn') ?? '2h';
     const ttl = parseDurationToSeconds(raw);
-    return this.onlineSessionService.kick(tokenId, operatorTokenId, ttl);
+    return this.onlineSessionService.kick(tokenId, operatorTokenId, ttl, user.userId);
   }
 
   private extractBearerToken(req: Request): string {

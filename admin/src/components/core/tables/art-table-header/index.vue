@@ -48,12 +48,12 @@
     fullClass: 'art-page-view',
     layout: 'search,refresh,size,fullscreen,columns,settings',
     showSearchBar: undefined,
-    compactTools: false,
+    compactTools: false
   })
 
   const columns = defineModel<ColumnOption[]>('columns', {
     required: false,
-    default: () => [],
+    default: () => []
   })
 
   const emit = defineEmits<{
@@ -66,6 +66,6 @@
     get: () => props.showSearchBar,
     set: (value: boolean | undefined) => {
       if (value !== undefined) emit('update:showSearchBar', value)
-    },
+    }
   })
 </script>

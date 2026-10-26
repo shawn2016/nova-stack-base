@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type {
   NoticeListItem,
@@ -12,10 +7,7 @@ import type {
   UnreadCountResult,
 } from '@nova/shared-types';
 import { Repository } from 'typeorm';
-import {
-  SysNoticeEntity,
-  SysNoticeReadEntity,
-} from '../../database/entities';
+import { SysNoticeEntity, SysNoticeReadEntity } from '../../database/entities';
 import { toApiId } from '../../common/utils/to-api-id';
 import { CreateNoticeDto, UpdateNoticeDto } from './dto/create-notice.dto';
 import { ListMyNoticesDto, ListNoticesDto } from './dto/list-notices.dto';
@@ -31,9 +23,7 @@ export class NoticeService {
 
   async list(query: ListNoticesDto): Promise<PaginationResult<NoticeListItem>> {
     const { page = 1, pageSize = 10, keyword, status, type } = query;
-    const qb = this.noticeRepo
-      .createQueryBuilder('n')
-      .orderBy('n.createdAt', 'DESC');
+    const qb = this.noticeRepo.createQueryBuilder('n').orderBy('n.createdAt', 'DESC');
 
     if (keyword?.trim()) {
       qb.andWhere('(n.title LIKE :kw OR n.content LIKE :kw)', {
@@ -219,10 +209,7 @@ export class NoticeService {
     };
   }
 
-  private toMyListItem(
-    entity: SysNoticeEntity,
-    read?: SysNoticeReadEntity,
-  ): NoticeMyListItem {
+  private toMyListItem(entity: SysNoticeEntity, read?: SysNoticeReadEntity): NoticeMyListItem {
     return {
       id: toApiId(entity.id),
       title: entity.title,

@@ -18,12 +18,7 @@
         <ElInput v-model="form.configName" placeholder="请输入配置名称" />
       </ElFormItem>
       <ElFormItem label="配置值" prop="configValue">
-        <ElInput
-          v-model="form.configValue"
-          type="textarea"
-          :rows="4"
-          placeholder="请输入配置值"
-        />
+        <ElInput v-model="form.configValue" type="textarea" :rows="4" placeholder="请输入配置值" />
       </ElFormItem>
       <ElFormItem label="分组">
         <ElInput v-model="form.configGroup" placeholder="如 site（可选）" />
@@ -58,7 +53,7 @@
   const props = withDefaults(defineProps<Props>(), {
     visible: false,
     dialogType: 'add',
-    configData: undefined,
+    configData: undefined
   })
 
   const emit = defineEmits<Emits>()
@@ -68,19 +63,19 @@
 
   const visible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const rules = reactive<FormRules>({
     configKey: [
       { required: true, message: '请输入配置键', trigger: 'blur' },
-      { max: 64, message: '最多 64 个字符', trigger: 'blur' },
+      { max: 64, message: '最多 64 个字符', trigger: 'blur' }
     ],
     configName: [
       { required: true, message: '请输入配置名称', trigger: 'blur' },
-      { max: 64, message: '最多 64 个字符', trigger: 'blur' },
+      { max: 64, message: '最多 64 个字符', trigger: 'blur' }
     ],
-    configValue: [{ required: true, message: '请输入配置值', trigger: 'blur' }],
+    configValue: [{ required: true, message: '请输入配置值', trigger: 'blur' }]
   })
 
   const form = reactive({
@@ -89,7 +84,7 @@
     configName: '',
     configValue: '',
     configGroup: '',
-    remark: '',
+    remark: ''
   })
 
   const initForm = () => {
@@ -100,7 +95,7 @@
         configName: props.configData.configName,
         configValue: props.configData.configValue,
         configGroup: props.configData.configGroup ?? '',
-        remark: props.configData.remark ?? '',
+        remark: props.configData.remark ?? ''
       })
     } else {
       Object.assign(form, {
@@ -109,7 +104,7 @@
         configName: '',
         configValue: '',
         configGroup: '',
-        remark: '',
+        remark: ''
       })
     }
   }
@@ -118,7 +113,7 @@
     () => props.visible,
     (newVal) => {
       if (newVal) initForm()
-    },
+    }
   )
 
   watch(
@@ -126,7 +121,7 @@
     () => {
       if (props.visible) initForm()
     },
-    { deep: true },
+    { deep: true }
   )
 
   const handleClose = () => {
@@ -150,7 +145,7 @@
           configName: form.configName,
           configValue: form.configValue,
           configGroup,
-          remark,
+          remark
         })
         ElMessage.success('新增成功')
       } else {
@@ -158,7 +153,7 @@
           configName: form.configName,
           configValue: form.configValue,
           configGroup,
-          remark,
+          remark
         })
         ElMessage.success('修改成功')
       }

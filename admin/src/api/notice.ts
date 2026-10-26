@@ -6,7 +6,7 @@ import type {
   NoticeMyListItem,
   PaginationResult,
   UnreadCountResult,
-  UpdateNoticeDto,
+  UpdateNoticeDto
 } from '@nova/shared-types'
 import { request } from './request'
 
@@ -23,7 +23,7 @@ function toTableResponse<T>(result: PaginationResult<T>) {
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }
 }
 
@@ -37,8 +37,8 @@ export function fetchNoticeList(params: NoticeListQuery = {}) {
       pageSize: size,
       ...(keyword ? { keyword } : {}),
       ...(status !== undefined ? { status } : {}),
-      ...(type !== undefined ? { type } : {}),
-    },
+      ...(type !== undefined ? { type } : {})
+    }
   }).then(toTableResponse)
 }
 
@@ -47,14 +47,14 @@ export function fetchMyNotices(params: { current?: number; size?: number } = {})
   return request<PaginationResult<NoticeMyListItem>>({
     url: '/notices/my',
     method: 'GET',
-    params: { page: current, pageSize: size },
+    params: { page: current, pageSize: size }
   }).then(toTableResponse)
 }
 
 export function fetchNoticeUnreadCount() {
   return request<UnreadCountResult>({
     url: '/notices/unread-count',
-    method: 'GET',
+    method: 'GET'
   })
 }
 
@@ -62,7 +62,7 @@ export function createNotice(data: CreateNoticeDto) {
   return request<NoticeListItem>({
     url: '/notices',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -70,28 +70,28 @@ export function updateNotice(id: string, data: UpdateNoticeDto) {
   return request<NoticeListItem>({
     url: `/notices/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function publishNotice(id: string) {
   return request<NoticeListItem>({
     url: `/notices/${id}/publish`,
-    method: 'PUT',
+    method: 'PUT'
   })
 }
 
 export function deleteNotice(id: string) {
   return request<{ success: true }>({
     url: `/notices/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }
 
 export function markNoticeRead(id: string) {
   return request<{ success: true }>({
     url: `/notices/${id}/read`,
-    method: 'POST',
+    method: 'POST'
   })
 }
 
@@ -109,8 +109,8 @@ export function fetchMessageInbox(params: MessageListQuery = {}) {
     params: {
       page: current,
       pageSize: size,
-      ...(keyword ? { keyword } : {}),
-    },
+      ...(keyword ? { keyword } : {})
+    }
   }).then(toTableResponse)
 }
 
@@ -122,15 +122,15 @@ export function fetchMessageSent(params: MessageListQuery = {}) {
     params: {
       page: current,
       pageSize: size,
-      ...(keyword ? { keyword } : {}),
-    },
+      ...(keyword ? { keyword } : {})
+    }
   }).then(toTableResponse)
 }
 
 export function fetchMessageUnreadCount() {
   return request<UnreadCountResult>({
     url: '/messages/unread-count',
-    method: 'GET',
+    method: 'GET'
   })
 }
 
@@ -138,20 +138,20 @@ export function sendMessage(data: CreateMessageDto) {
   return request<MessageListItem>({
     url: '/messages',
     method: 'POST',
-    data,
+    data
   })
 }
 
 export function markMessageRead(id: string) {
   return request<MessageListItem>({
     url: `/messages/${id}/read`,
-    method: 'PUT',
+    method: 'PUT'
   })
 }
 
 export function deleteMessage(id: string) {
   return request<{ success: true }>({
     url: `/messages/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }

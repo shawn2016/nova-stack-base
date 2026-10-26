@@ -2,6 +2,8 @@
 
 > **AI 写码**：先读 [ai-checklist.md](./ai-checklist.md) → 按场景打开标杆 → 写完后勾选。
 
+生产基座与执行门禁见 [foundation.md](./foundation.md)。
+
 ## 按场景读哪份
 
 | 你在做… | 读 | 必开标杆 |

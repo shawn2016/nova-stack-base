@@ -67,7 +67,7 @@
   const { keepAliveExclude } = storeToRefs(useWorktabStore())
 
   useAutoLayoutHeight(undefined, {
-    extraSpacing: uiConfig.contentInset * 2,
+    extraSpacing: uiConfig.contentInset * 2
   })
 
   const isRefresh = shallowRef(true)
@@ -82,7 +82,7 @@
   const prevIsFullPage = ref(isFullPage.value)
 
   const showContentHeader = computed(
-    () => !isFullPage.value && (showFestivalText.value || isOpenRouteInfo === 'true'),
+    () => !isFullPage.value && (showFestivalText.value || isOpenRouteInfo === 'true')
   )
 
   // 切换动画名称：首次加载、从全屏返回时不使用动画
@@ -107,21 +107,20 @@
     })
   })
 
-  const containerStyle = computed(
-    (): CSSProperties =>
-      isFullPage.value
-        ? {
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100vh',
-            zIndex: 2500,
-            background: 'var(--default-bg-color)',
-          }
-        : {
-            maxWidth: containerWidth.value,
-          },
+  const containerStyle = computed((): CSSProperties =>
+    isFullPage.value
+      ? {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100vh',
+          zIndex: 2500,
+          background: 'var(--default-bg-color)'
+        }
+      : {
+          maxWidth: containerWidth.value
+        }
   )
 
   const reload = () => {

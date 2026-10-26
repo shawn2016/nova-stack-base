@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  CreateJobDto,
-  JobListItem,
-  JobLogListItem,
-  RunJobResult,
-} from './scheduled-job.js';
+import type { CreateJobDto, JobListItem, JobLogListItem, RunJobResult } from './scheduled-job.js';
 
 describe('scheduled-job types', () => {
   it('CreateJobDto 包含 cron 与 invokeTarget', () => {
@@ -33,13 +28,13 @@ describe('scheduled-job types', () => {
     expect(item.status).toBe(1);
   });
 
-  it('RunJobResult 表示执行结果', () => {
+  it('RunJobResult 表示已排队，完成结果另查日志', () => {
     const result: RunJobResult = {
-      logId: '1',
-      status: 1,
+      executionId: 'execution-1',
+      status: 'queued',
       message: 'ok',
     };
-    expect(result.status).toBe(1);
+    expect(result.status).toBe('queued');
   });
 
   it('JobLogListItem 含耗时', () => {

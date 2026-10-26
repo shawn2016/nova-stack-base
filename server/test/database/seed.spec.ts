@@ -301,9 +301,9 @@ describe('runInitSeed', () => {
       stores.menus.some((m) => m.name === '邮件管理' && m.path === '/infra/email'),
     ).toBe(true);
     expect(stores.menus.find((m) => m.name === '审计日志')?.sort).toBe(10);
-    expect(stores.menus.some((m) => m.name === '内容管理')).toBe(true);
+    expect(stores.menus.some((m) => m.name === '内容管理')).toBe(false);
     expect(stores.menus.some((m) => m.name === '文章管理' && m.path === '/content/articles')).toBe(
-      true,
+      false,
     );
     expect(stores.menus.find((m) => m.name === '系统管理')?.icon).toBe('ri:settings-3-line');
     expect(stores.menus.find((m) => m.name === '用户管理')?.icon).toBe('ri:user-line');
@@ -451,6 +451,21 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
 
     expect(stores.regions.length).toBe(countAfterFirst);
+  });
+
+  it('retires persisted content demo menus and does not recreate them', async () => {
+    process.env.NODE_ENV = 'development';
+    const stores = emptyStores();
+    stores.menus.push(
+      { id: '9000', name: '内容管理', parentId: '0', path: '/content', visible: 1, status: 1 } as SysMenuEntity,
+      { id: '9001', name: '文章管理', parentId: '9000', path: '/content/articles', visible: 1, status: 1 } as SysMenuEntity,
+    );
+    const dataSource = createMockDataSource(stores);
+    await runInitSeed(dataSource);
+    await runInitSeed(dataSource);
+    const retired = stores.menus.filter(menu => menu.path?.startsWith('/content'));
+    expect(retired).toHaveLength(2);
+    expect(retired.every(menu => menu.status === 0 && menu.visible === 0)).toBe(true);
   });
 
   it('skips default admin and dev member seeds in production', async () => {

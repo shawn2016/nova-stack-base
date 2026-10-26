@@ -14,7 +14,7 @@ export const listPanelConfig = {
   /** 表格工具栏按钮布局 */
   tableHeaderLayout: 'search,refresh,size,fullscreen,columns,settings',
   /** 默认开启表格斑马纹 */
-  showZebra: true,
+  showZebra: true
 } as const
 
 export type ListPanelConfig = typeof listPanelConfig

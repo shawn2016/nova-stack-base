@@ -15,11 +15,7 @@ import type {
   UpdateDeptSettingsDto,
 } from '@nova/shared-types';
 import { In, Repository } from 'typeorm';
-import {
-  SysConfigEntity,
-  SysDeptEntity,
-  SysUserEntity,
-} from '../../database/entities';
+import { SysConfigEntity, SysDeptEntity, SysUserEntity } from '../../database/entities';
 import { toApiId } from '../../common/utils/to-api-id';
 import { DataScopeService } from '../data-scope/data-scope.service';
 import { CreateDeptDto } from './dto/create-dept.dto';
@@ -62,10 +58,7 @@ export class DeptService {
     const filter = await this.dataScopeService.resolveForUser(currentUserId);
     const user = await this.userRepo.findOne({ where: { id: currentUserId } });
     const userDeptId = user?.deptId ? toApiId(user.deptId) : null;
-    const allowedDeptIds = this.dataScopeService.resolveDeptIdsForDeptApi(
-      filter,
-      userDeptId,
-    );
+    const allowedDeptIds = this.dataScopeService.resolveDeptIdsForDeptApi(filter, userDeptId);
 
     if (allowedDeptIds === null) {
       return this.buildTree(depts.map((dept) => this.toListItem(dept)));
@@ -78,10 +71,7 @@ export class DeptService {
     return this.buildTree(scoped.map((dept) => this.toListItem(dept)));
   }
 
-  async list(
-    query: ListDeptsDto,
-    currentUserId?: string,
-  ): Promise<PaginationResult<DeptListItem>> {
+  async list(query: ListDeptsDto, currentUserId?: string): Promise<PaginationResult<DeptListItem>> {
     const { page = 1, pageSize = 10, keyword, status, parentId } = query;
     const qb = this.deptRepo
       .createQueryBuilder('d')

@@ -55,9 +55,7 @@ export class OperLogService {
     currentUserId: string,
   ): Promise<PaginationResult<OperLogListItem>> {
     const { page, pageSize, username, module, status, startTime, endTime } = query;
-    const qb = this.operLogRepo
-      .createQueryBuilder('log')
-      .orderBy('log.createdAt', 'DESC');
+    const qb = this.operLogRepo.createQueryBuilder('log').orderBy('log.createdAt', 'DESC');
 
     const filter = await this.dataScopeService.resolveForUser(currentUserId);
     const user = await this.userRepo.findOne({ where: { id: currentUserId } });

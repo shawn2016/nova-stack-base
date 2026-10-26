@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateDictDataDto {

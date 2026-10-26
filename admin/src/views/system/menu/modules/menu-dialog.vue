@@ -80,7 +80,7 @@
   const props = withDefaults(defineProps<Props>(), {
     visible: false,
     editData: null,
-    menuOptions: () => [],
+    menuOptions: () => []
   })
 
   const emit = defineEmits<Emits>()
@@ -100,12 +100,12 @@
     permissionCode: '',
     sort: 0,
     visible: 1 as 0 | 1,
-    status: 1 as 0 | 1,
+    status: 1 as 0 | 1
   })
 
   const rules: FormRules = {
     name: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }],
-    type: [{ required: true, message: '请选择菜单类型', trigger: 'change' }],
+    type: [{ required: true, message: '请选择菜单类型', trigger: 'change' }]
   }
 
   const dialogTitle = computed(() => (isEdit.value ? '编辑菜单' : '新增菜单'))
@@ -115,8 +115,8 @@
       .filter((item) => item.type !== 'button')
       .map((item) => ({
         id: item.id,
-        label: `${item.name}${item.path ? ` (${item.path})` : ''}`,
-      })),
+        label: `${item.name}${item.path ? ` (${item.path})` : ''}`
+      }))
   )
 
   function resetForm() {
@@ -131,7 +131,7 @@
       permissionCode: '',
       sort: 0,
       visible: 1,
-      status: 1,
+      status: 1
     })
   }
 
@@ -154,7 +154,7 @@
       permissionCode: props.editData.permissionCode,
       sort: props.editData.sort,
       visible: props.editData.visible,
-      status: props.editData.status,
+      status: props.editData.status
     })
   }
 
@@ -167,7 +167,7 @@
           formRef.value?.clearValidate()
         })
       }
-    },
+    }
   )
 
   function handleCancel() {
@@ -195,7 +195,7 @@
       permissionCode: form.permissionCode || undefined,
       sort: form.sort,
       visible: form.visible,
-      status: form.status,
+      status: form.status
     }
 
     try {

@@ -62,7 +62,7 @@
   const MAX_INLINE = 3
 
   const visibleItems = computed(() =>
-    props.items.filter((item) => !item.auth || userStore.hasPermission(item.auth)),
+    props.items.filter((item) => !item.auth || userStore.hasPermission(item.auth))
   )
 
   const inlineItems = computed(() => {

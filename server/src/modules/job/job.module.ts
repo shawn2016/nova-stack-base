@@ -10,12 +10,7 @@ import { JobService } from './job.service';
 @Module({
   imports: [TypeOrmModule.forFeature([SysJobEntity, SysJobLogEntity])],
   controllers: [JobController],
-  providers: [
-    JobHandlerRegistry,
-    JobLogService,
-    JobSchedulerService,
-    JobService,
-  ],
+  providers: [JobHandlerRegistry, JobLogService, JobSchedulerService, JobService],
   exports: [JobService],
 })
 export class JobModule {}

@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { config as loadEnv } from 'dotenv';
 import { resolve } from 'path';
 import { DataSource } from 'typeorm';
-import { entities } from '../entities';
+import { createDatabaseOptions } from '../data-source-options';
 import { runInitSeed } from './init.seed';
 
 loadEnv({ path: resolve(__dirname, '../../../.env') });
@@ -17,16 +17,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
  * - production 不写入任何默认凭据；请通过运维流程创建首个管理员
  */
 function buildDataSource(): DataSource {
-  return new DataSource({
-    type: 'mysql',
-    host: process.env.DB_HOST ?? 'localhost',
-    port: parseInt(process.env.DB_PORT ?? '3306', 10),
-    username: process.env.DB_USERNAME ?? 'root',
-    password: process.env.DB_PASSWORD ?? '',
-    database: process.env.DB_DATABASE ?? 'nova_stack',
-    entities,
-    synchronize: process.env.NODE_ENV !== 'production',
-  });
+  return new DataSource(createDatabaseOptions());
 }
 
 async function main(): Promise<void> {

@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { DictTypeListItem, PaginationResult } from '@nova/shared-types';
 import { Repository } from 'typeorm';
@@ -22,9 +18,7 @@ export class DictTypeService {
 
   async list(query: ListDictTypesDto): Promise<PaginationResult<DictTypeListItem>> {
     const { page, pageSize, keyword } = query;
-    const qb = this.typeRepo
-      .createQueryBuilder('type')
-      .orderBy('type.createdAt', 'DESC');
+    const qb = this.typeRepo.createQueryBuilder('type').orderBy('type.createdAt', 'DESC');
 
     if (keyword) {
       qb.andWhere('(type.name LIKE :keyword OR type.code LIKE :keyword)', {

@@ -10,13 +10,7 @@ export interface RegionListItem {
 }
 
 /** 地区树节点 */
-export interface RegionTreeNode {
-  id: string;
-  parentId: string;
-  name: string;
-  code: string;
-  level: 1 | 2 | 3;
-  sort: number;
+export interface RegionTreeNode extends RegionListItem {
   children?: RegionTreeNode[];
 }
 

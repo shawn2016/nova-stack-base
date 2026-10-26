@@ -56,10 +56,7 @@ export class RoleController {
   @Put(':id/permissions')
   @RequirePermission('system:role:update')
   @ApiOperation({ summary: '分配角色权限' })
-  assignPermissions(
-    @Param('id') id: string,
-    @Body() body: AssignRolePermissionsDto,
-  ) {
+  assignPermissions(@Param('id') id: string, @Body() body: AssignRolePermissionsDto) {
     return this.roleService.assignPermissions(id, body);
   }
 

@@ -31,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+  import type { OnlineSessionListQuery } from '@/api/online-session'
   import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
   import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
@@ -49,8 +50,8 @@
       label: '关键词',
       key: 'keyword',
       type: 'input',
-      props: { clearable: true, placeholder: '用户名或 IP' },
-    },
+      props: { clearable: true, placeholder: '用户名或 IP' }
+    }
   ])
 
   const {
@@ -63,22 +64,24 @@
     replaceSearchParams,
     handleSizeChange,
     handleCurrentChange,
-    refreshData,
-  } = useTable({
+    refreshData
+  } = useTable<
+    (params: OnlineSessionListQuery) => Promise<Api.Common.PaginatedResponse<OnlineSessionListItem>>
+  >({
     core: {
-      apiFn: async (params) => {
+      apiFn: async (params): Promise<Api.Common.PaginatedResponse<OnlineSessionListItem>> => {
         const result = await fetchOnlineSessionList(params)
         currentTokenId.value = result.currentTokenId
         return {
           records: result.list,
           total: result.total,
           current: result.page,
-          size: result.pageSize,
+          size: result.pageSize
         }
       },
       apiParams: {
         current: 1,
-        size: 20,
+        size: 20
       },
       columnsFactory: () => [
         { prop: 'username', label: '用户名', minWidth: 120 },
@@ -87,14 +90,13 @@
           prop: 'userAgent',
           label: '浏览器',
           minWidth: 200,
-          formatter: (row: OnlineSessionListItem) => row.userAgent || '-',
+          formatter: (row: OnlineSessionListItem) => row.userAgent || '-'
         },
         {
           prop: 'loginAt',
           label: '登录时间',
           minWidth: 180,
-          formatter: (row: OnlineSessionListItem) =>
-            new Date(row.loginAt).toLocaleString('zh-CN'),
+          formatter: (row: OnlineSessionListItem) => new Date(row.loginAt).toLocaleString('zh-CN')
         },
         {
           prop: 'operation',
@@ -111,14 +113,14 @@
                   label: '踢下线',
                   danger: true,
                   auth: 'system:session:kick',
-                  onClick: () => handleKick(row),
-                },
-              ] satisfies TableActionItem[],
+                  onClick: () => handleKick(row)
+                }
+              ] satisfies TableActionItem[]
             })
-          },
-        },
-      ],
-    },
+          }
+        }
+      ]
+    }
   })
 
   function handleReset() {
@@ -133,7 +135,7 @@
 
   async function handleKick(row: OnlineSessionListItem) {
     await ElMessageBox.confirm(`确定强制「${row.username}」下线吗？`, '踢下线确认', {
-      type: 'warning',
+      type: 'warning'
     })
     await kickOnlineSession(row.tokenId)
     ElMessage.success('已踢下线')

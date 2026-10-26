@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  CreateRegionDto,
-  RegionListItem,
-  RegionTreeNode,
-  UpdateRegionDto,
-} from './region.js';
+import type { CreateRegionDto, RegionListItem, RegionTreeNode, UpdateRegionDto } from './region.js';
 
 describe('region types', () => {
   it('RegionListItem 包含地区列表字段', () => {

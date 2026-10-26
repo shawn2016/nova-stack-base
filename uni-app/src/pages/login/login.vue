@@ -10,12 +10,7 @@
           maxlength="11"
           border="surround"
         />
-        <u-input
-          v-model="form.password"
-          placeholder="密码"
-          password
-          border="surround"
-        />
+        <u-input v-model="form.password" placeholder="密码" password border="surround" />
         <u-button type="primary" text="登录" :loading="loading" @click="handleLogin" />
         <view class="link-row">
           <text class="link" @click="goRegister">没有账号？去注册</text>

@@ -1,132 +1,117 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService as NestJwtService } from '@nestjs/jwt';
+import { Repository } from 'typeorm';
 import { JwtService } from '../../src/common/jwt/jwt.service';
+import { AuthSessionEntity } from '../../src/database/entities';
 import { RedisService } from '../../src/redis/redis.service';
+import { createMemoryRedis } from '../helpers/memory-redis';
 
-const REFRESH_TTL_SECONDS = 7 * 24 * 3600;
-
-function createMockRedis() {
-  const store = new Map<string, { value: string; ex?: number }>();
-
-  return {
-    set: jest.fn(
-      async (key: string, value: string, mode?: string, ttl?: number) => {
-        store.set(key, { value, ex: mode === 'EX' ? ttl : undefined });
-      },
-    ),
-    get: jest.fn(async (key: string) => store.get(key)?.value ?? null),
-    exists: jest.fn(async (key: string) => (store.has(key) ? 1 : 0)),
-    _store: store,
-  };
-}
-
-describe('JwtService', () => {
+describe('JwtService session-bound credentials', () => {
   let service: JwtService;
-  let mockRedis: ReturnType<typeof createMockRedis>;
-  let nestJwtService: NestJwtService;
-
+  let redis: ReturnType<typeof createMemoryRedis>;
+  let nest: NestJwtService;
   beforeEach(() => {
-    mockRedis = createMockRedis();
-
-    const configService = {
-      get: jest.fn((key: string) => {
-        const values: Record<string, string> = {
-          'jwt.secret': 'test-secret-key-at-least-32-chars-long',
-          'jwt.accessExpiresIn': '2h',
-          'jwt.expiresIn': '7d',
-        };
-        return values[key];
-      }),
-    } as unknown as ConfigService;
-
-    nestJwtService = new NestJwtService({
-      secret: 'test-secret-key-at-least-32-chars-long',
-    });
-
-    const redisService = {
-      getClient: () => mockRedis,
-    } as unknown as RedisService;
-
-    service = new JwtService(configService, nestJwtService, redisService);
+    redis = createMemoryRedis();
+    nest = new NestJwtService({ secret: 'test-secret-key-at-least-32-chars-long' });
+    const config = {
+      get: (key: string) => ({ 'jwt.accessExpiresIn': '2h', 'jwt.expiresIn': '3m' })[key],
+    } as ConfigService;
+    const query = {
+      innerJoin: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      getExists: async () => true,
+    };
+    const repo = {
+      manager: {
+        transaction: async (work: (manager: unknown) => Promise<void>) =>
+          work({
+            connection: { options: { type: 'better-sqlite3' } },
+            getRepository: () => ({
+              createQueryBuilder: () => ({
+                select: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                getOne: async () => ({ id: '1', status: 1 }),
+              }),
+            }),
+            insert: jest.fn(),
+          }),
+      },
+      insert: jest.fn(),
+      find: async () => [],
+      delete: jest.fn(),
+      createQueryBuilder: () => query,
+    } as unknown as Repository<AuthSessionEntity>;
+    service = new JwtService(
+      config,
+      nest,
+      { getClient: () => redis } as unknown as RedisService,
+      repo,
+    );
   });
-
-  it('signAccessToken 签发含 sub、type、jti 的 access token', async () => {
-    const token = await service.signAccessToken({
+  it('marks token purpose and binds the pair to a session', async () => {
+    const refresh = await service.signRefreshToken({
       userId: '42',
       type: 'admin',
+      sessionId: 'device-a',
     });
-
-    const payload = nestJwtService.verify(token);
-    expect(payload.sub).toBe('42');
-    expect(payload.type).toBe('admin');
-    expect(typeof payload.jti).toBe('string');
-    expect(payload.jti.length).toBeGreaterThan(0);
-  });
-
-  it('signRefreshToken 将 token 存入 Redis refresh:admin:{userId} 并设置 7d TTL', async () => {
-    const token = await service.signRefreshToken({
-      userId: '99',
+    const access = await service.signAccessToken({
+      userId: '42',
       type: 'admin',
+      sessionId: 'device-a',
     });
-
-    expect(mockRedis.set).toHaveBeenCalledWith(
-      'refresh:admin:99',
-      token,
-      'EX',
-      REFRESH_TTL_SECONDS,
-    );
-  });
-
-  it('signRefreshToken 将 member token 存入 refresh:member:{userId}', async () => {
-    await service.signRefreshToken({
-      userId: '7',
-      type: 'member',
+    expect(await service.verifyToken(access, 'access')).toMatchObject({
+      sid: 'device-a',
+      purpose: 'access',
+      jti: 'device-a',
     });
-
-    expect(mockRedis.set).toHaveBeenCalledWith(
-      'refresh:member:7',
-      expect.any(String),
-      'EX',
-      REFRESH_TTL_SECONDS,
-    );
+    expect(await service.verifyToken(refresh, 'refresh')).toMatchObject({
+      sid: 'device-a',
+      purpose: 'refresh',
+    });
+    await expect(service.verifyToken(access, 'refresh')).rejects.toThrow('please log in again');
+    await expect(service.verifyToken(refresh, 'access')).rejects.toThrow('please log in again');
   });
-
-  it('verifyToken 解析有效 token 并返回 payload', async () => {
-    const token = await service.signAccessToken({
+  it('uses configured refresh expiry in Redis and the JWT', async () => {
+    const token = await service.signRefreshToken({
       userId: '1',
       type: 'member',
+      sessionId: 'device-b',
     });
-
     const payload = await service.verifyToken(token);
-    expect(payload.sub).toBe('1');
-    expect(payload.type).toBe('member');
-    expect(payload.jti).toBeDefined();
-    expect(payload.iat).toBeDefined();
-    expect(payload.exp).toBeDefined();
+    expect(payload.exp - payload.iat).toBe(180);
+    expect(await redis.ttl('auth:session:device-b')).toBe(180);
+    expect(await redis.get('auth:session:device-b')).toBe(token);
   });
-
-  it('verifyToken 对无效 token 抛出异常', async () => {
-    await expect(service.verifyToken('invalid.token.here')).rejects.toThrow();
+  it('revokes both purposes without revoking another device', async () => {
+    const first = await service.signRefreshToken({
+      userId: '1',
+      type: 'admin',
+      sessionId: 'first',
+    });
+    const second = await service.signRefreshToken({
+      userId: '1',
+      type: 'admin',
+      sessionId: 'second',
+    });
+    await service.revokeSession('first');
+    await expect(
+      service.assertSessionActive(await service.verifyToken(first), first),
+    ).rejects.toThrow('Session revoked');
+    await expect(
+      service.assertSessionActive(await service.verifyToken(second), second),
+    ).resolves.toBeUndefined();
   });
-
-  it('blacklist 写入 jwt:blacklist:{jti} 并设置 TTL', async () => {
-    await service.blacklist('abc-jti', 3600);
-
-    expect(mockRedis.set).toHaveBeenCalledWith(
-      'jwt:blacklist:abc-jti',
-      '1',
-      'EX',
-      3600,
+  it('requires explicit re-login for old signed tokens', async () => {
+    const legacy = nest.sign({ sub: '42', type: 'admin', jti: 'old' }, { expiresIn: '2h' });
+    await expect(service.verifyToken(legacy)).rejects.toThrow('please log in again');
+  });
+  it('fails closed when Redis is missing even in test mode', async () => {
+    const missing = new JwtService(
+      {} as ConfigService,
+      nest,
+      { getClient: () => null } as unknown as RedisService,
+      {} as Repository<AuthSessionEntity>,
     );
-  });
-
-  it('isBlacklisted 在 jti 已拉黑时返回 true', async () => {
-    mockRedis._store.set('jwt:blacklist:blocked-jti', { value: '1' });
-
-    await expect(service.isBlacklisted('blocked-jti')).resolves.toBe(true);
-  });
-
-  it('isBlacklisted 在 jti 未拉黑时返回 false', async () => {
-    await expect(service.isBlacklisted('clean-jti')).resolves.toBe(false);
+    await expect(missing.isBlacklisted('unknown')).rejects.toThrow('Auth service unavailable');
   });
 });

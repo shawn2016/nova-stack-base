@@ -1,3 +1,5 @@
+import { AuthSessionEntity } from './auth-session.entity';
+export { AuthSessionEntity } from './auth-session.entity';
 import { ArticleEntity } from './article.entity';
 import { MemberUserEntity } from './member-user.entity';
 import { SysConfigEntity } from './sys-config.entity';
@@ -60,6 +62,7 @@ export { SysIpBlacklistEntity } from './sys-ip-blacklist.entity';
 
 /** 全部 RBAC / Member / Dict 实体，供 TypeORM 与测试加载 */
 export const entities = [
+  AuthSessionEntity,
   SysUserEntity,
   SysRoleEntity,
   SysPermissionEntity,

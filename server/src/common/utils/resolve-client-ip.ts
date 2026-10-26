@@ -1,13 +1,6 @@
 import type { Request } from 'express';
 
-/** 从 Express 请求解析客户端 IP；trustProxy 时取 X-Forwarded-For 首段 */
-export function resolveClientIp(req: Request, trustProxy: boolean): string {
-  if (trustProxy) {
-    const xff = req.headers['x-forwarded-for'];
-    if (typeof xff === 'string' && xff.length > 0) {
-      return xff.split(',')[0]?.trim() ?? '';
-    }
-  }
-
+/** Express 按 bootstrap 中的可信代理跳数解析 IP；绝不自行信任 XFF 首段。 */
+export function resolveClientIp(req: Request, _trustProxy: boolean): string {
   return req.ip ?? req.socket?.remoteAddress ?? '';
 }

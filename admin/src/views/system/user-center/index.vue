@@ -111,6 +111,7 @@
 </template>
 
 <script setup lang="ts">
+  import { UploadAjaxError } from 'element-plus/es/components/upload/src/ajax'
   import type { UploadRequestOptions } from 'element-plus'
   import type { FormInstance, FormRules } from 'element-plus'
   import defaultAvatar from '@imgs/user/avatar.webp'
@@ -131,23 +132,27 @@
   const avatarPreview = ref(defaultAvatar)
 
   const form = reactive({
-    nickname: '',
+    nickname: ''
   })
 
   const pwdForm = reactive({
     oldPassword: '',
     newPassword: '',
-    confirmPassword: '',
+    confirmPassword: ''
   })
 
   const profileRules = reactive<FormRules>({
     nickname: [
       { required: true, message: '请输入昵称', trigger: 'blur' },
-      { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' },
-    ],
+      { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
+    ]
   })
 
-  const validateConfirmPassword = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+  const validateConfirmPassword = (
+    _rule: unknown,
+    value: string,
+    callback: (error?: Error) => void
+  ) => {
     if (!value) {
       callback(new Error('请再次输入新密码'))
       return
@@ -163,14 +168,14 @@
     oldPassword: [{ required: true, message: '请输入当前密码', trigger: 'blur' }],
     newPassword: [
       { required: true, message: '请输入新密码', trigger: 'blur' },
-      { min: 6, message: '新密码长度不能少于 6 位', trigger: 'blur' },
+      { min: 6, message: '新密码长度不能少于 6 位', trigger: 'blur' }
     ],
-    confirmPassword: [{ validator: validateConfirmPassword, trigger: 'blur' }],
+    confirmPassword: [{ validator: validateConfirmPassword, trigger: 'blur' }]
   })
 
   function syncFormFromStore() {
     form.nickname = userInfo.value?.nickname ?? ''
-    avatarPreview.value = userInfo.value.avatar || defaultAvatar
+    avatarPreview.value = userInfo.value?.avatar || defaultAvatar
   }
 
   async function refreshUserInfo() {
@@ -191,7 +196,14 @@
       options.onSuccess?.(result)
     } catch (error) {
       ElMessage.error(error instanceof Error ? error.message : '头像上传失败')
-      options.onError?.(error as Error)
+      options.onError?.(
+        new UploadAjaxError(
+          error instanceof Error ? error.message : '上传失败',
+          0,
+          'POST',
+          '/api/upload'
+        )
+      )
     } finally {
       avatarUploading.value = false
     }
@@ -221,7 +233,7 @@
     try {
       await changePassword({
         oldPassword: pwdForm.oldPassword,
-        newPassword: pwdForm.newPassword,
+        newPassword: pwdForm.newPassword
       })
       pwdForm.oldPassword = ''
       pwdForm.newPassword = ''

@@ -1,0 +1,69 @@
+name: Foundation CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-disposable-root
+          MYSQL_DATABASE: nova_foundation_runtime_test
+          MYSQL_USER: nova_ci
+          MYSQL_PASSWORD: ci-disposable-app
+        ports:
+          - 13316:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pci-disposable-root"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 16389:6379
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=5s --health-timeout=3s --health-retries=20
+    env:
+      NODE_ENV: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: '13316'
+      DB_USERNAME: nova_ci
+      DB_PASSWORD: ci-disposable-app
+      DB_DATABASE: nova_foundation_runtime_test
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: '16389'
+      REDIS_KEY_PREFIX: 'nova:ci:'
+      JWT_SECRET: ci-test-only-secret-at-least-32-characters
+      CORS_ORIGINS: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Prepare isolated database grants
+        env:
+          TEST_MYSQL_ROOT_PASSWORD: ci-disposable-root
+        run: pnpm --filter @nova/server exec node scripts/prepare-test-databases.cjs
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm verify:test
+      - run: pnpm build
+      - name: Real dependency integration
+        run: pnpm test:integration
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: test-results/
+          if-no-files-found: ignore

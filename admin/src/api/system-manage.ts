@@ -13,7 +13,7 @@ import type {
   SysUserListItem,
   UpdateMenuDto,
   UpdateRoleDto,
-  UpdateUserDto,
+  UpdateUserDto
 } from '@nova/shared-types'
 import { request } from './request'
 
@@ -40,7 +40,7 @@ function toTableResponse<T>(result: PaginationResult<T>) {
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }
 }
 
@@ -49,7 +49,7 @@ function buildListParams(params: { current?: number; size?: number; keyword?: st
   return {
     page: current,
     pageSize: size,
-    ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
+    ...(keyword?.trim() ? { keyword: keyword.trim() } : {})
   }
 }
 
@@ -57,14 +57,14 @@ export function fetchUserList(params: UserListQuery = {}) {
   return request<PaginationResult<SysUserListItem>>({
     url: '/users',
     method: 'GET',
-    params: buildListParams(params),
+    params: buildListParams(params)
   }).then(toTableResponse)
 }
 
 export function fetchUserDetail(id: string) {
   return request<SysUserDetail>({
     url: `/users/${id}`,
-    method: 'GET',
+    method: 'GET'
   })
 }
 
@@ -72,7 +72,7 @@ export function createUser(data: CreateUserDto) {
   return request<SysUserDetail>({
     url: '/users',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -80,14 +80,14 @@ export function updateUser(id: string, data: UpdateUserDto) {
   return request<SysUserDetail>({
     url: `/users/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function deleteUser(id: string) {
   return request<{ success: true }>({
     url: `/users/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }
 
@@ -95,7 +95,7 @@ export function assignUserRoles(id: string, data: AssignUserRolesDto) {
   return request<SysUserDetail>({
     url: `/users/${id}/roles`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
@@ -103,21 +103,21 @@ export function fetchRoleList(params: RoleListQuery = {}) {
   return request<PaginationResult<SysRoleListItem>>({
     url: '/roles',
     method: 'GET',
-    params: buildListParams(params),
+    params: buildListParams(params)
   }).then(toTableResponse)
 }
 
 export function fetchRoleDetail(id: string) {
   return request<SysRoleDetail>({
     url: `/roles/${id}`,
-    method: 'GET',
+    method: 'GET'
   })
 }
 
 export function fetchPermissionOptions() {
   return request<SysPermissionOption[]>({
     url: '/roles/permission-options',
-    method: 'GET',
+    method: 'GET'
   })
 }
 
@@ -125,7 +125,7 @@ export function createRole(data: CreateRoleDto) {
   return request<SysRoleDetail>({
     url: '/roles',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -133,14 +133,14 @@ export function updateRole(id: string, data: UpdateRoleDto) {
   return request<SysRoleDetail>({
     url: `/roles/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function deleteRole(id: string) {
   return request<{ success: true }>({
     url: `/roles/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }
 
@@ -148,7 +148,7 @@ export function assignRolePermissions(id: string, data: AssignRolePermissionsDto
   return request<SysRoleDetail>({
     url: `/roles/${id}/permissions`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
@@ -161,8 +161,8 @@ export function fetchMenuList(params: MenuListQuery = {}) {
     params: {
       page,
       pageSize,
-      ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
-    },
+      ...(keyword?.trim() ? { keyword: keyword.trim() } : {})
+    }
   }).then((result) => result.list)
 }
 
@@ -170,7 +170,7 @@ export function createMenu(data: CreateMenuDto) {
   return request<SysMenuListItem>({
     url: '/menus',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -178,13 +178,13 @@ export function updateMenu(id: string, data: UpdateMenuDto) {
   return request<SysMenuListItem>({
     url: `/menus/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function deleteMenu(id: string) {
   return request<{ success: true }>({
     url: `/menus/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }

@@ -132,10 +132,7 @@ export class DataScopeService {
   }
 
   /** Returns null when all depts are visible; otherwise allowed dept id list. */
-  resolveDeptIdsForDeptApi(
-    filter: DataScopeFilter,
-    userDeptId: string | null,
-  ): string[] | null {
+  resolveDeptIdsForDeptApi(filter: DataScopeFilter, userDeptId: string | null): string[] | null {
     if (filter.type === 'all') {
       return null;
     }
@@ -155,9 +152,7 @@ export class DataScopeService {
     if (!deptIds.length) {
       return [];
     }
-    const parentById = new Map(
-      depts.map((dept) => [toApiId(dept.id), toApiId(dept.parentId)]),
-    );
+    const parentById = new Map(depts.map((dept) => [toApiId(dept.id), toApiId(dept.parentId)]));
     const expanded = new Set(deptIds);
     for (const deptId of deptIds) {
       let current = deptId;

@@ -1,0 +1,5 @@
+node_modules/
+**/dist/
+**/coverage/
+# unplugin 生成的类型声明保持生成器输出，避免 build 后门禁产生噪音。
+admin/src/types/import/

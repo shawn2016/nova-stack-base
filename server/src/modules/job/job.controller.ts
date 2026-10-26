@@ -12,11 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequirePermission } from '../rbac/decorators/require-permission.decorator';
-import {
-  CreateJobDto,
-  UpdateJobDto,
-  UpdateJobStatusDto,
-} from './dto/job.dto';
+import { CreateJobDto, UpdateJobDto, UpdateJobStatusDto } from './dto/job.dto';
 import { ListJobLogsDto, ListJobsDto } from './dto/list-jobs.dto';
 import { JobLogService } from './job-log.service';
 import { JobService } from './job.service';
@@ -82,7 +78,7 @@ export class JobController {
 
   @Post(':id/run')
   @RequirePermission('infra:job:run')
-  @ApiOperation({ summary: '立即执行一次' })
+  @ApiOperation({ summary: '排队执行一次，执行结果见任务日志' })
   runOnce(@Param('id') id: string) {
     return this.jobService.runOnce(id);
   }

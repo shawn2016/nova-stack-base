@@ -39,21 +39,14 @@ export class EmailService {
     const provider = this.providerFactory.resolve(channel.provider);
 
     const sentAt = new Date();
-    let status: 0 | 1 = 0;
-    let providerMessage: string | null = null;
-
-    try {
-      const result = await provider.send({
-        to: dto.to,
-        subject,
-        content,
-        config,
-      });
-      status = result.success ? 1 : 0;
-      providerMessage = result.message;
-    } catch (error) {
-      throw error;
-    }
+    const result = await provider.send({
+      to: dto.to,
+      subject,
+      content,
+      config,
+    });
+    const status: 0 | 1 = result.success ? 1 : 0;
+    const providerMessage = result.message;
 
     const log = await this.logRepo.save(
       this.logRepo.create({

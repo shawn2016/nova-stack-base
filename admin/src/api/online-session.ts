@@ -12,7 +12,7 @@ function buildListParams(params: OnlineSessionListQuery = {}) {
   return {
     page: current,
     pageSize: size,
-    ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
+    ...(keyword?.trim() ? { keyword: keyword.trim() } : {})
   }
 }
 
@@ -20,13 +20,13 @@ export function fetchOnlineSessionList(params: OnlineSessionListQuery = {}) {
   return request<OnlineSessionListResult>({
     url: '/sessions/online',
     method: 'GET',
-    params: buildListParams(params),
+    params: buildListParams(params)
   })
 }
 
 export function kickOnlineSession(tokenId: string) {
   return request<{ success: true }>({
     url: `/sessions/online/${tokenId}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }

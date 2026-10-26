@@ -6,10 +6,7 @@ import { MemberAuthController } from './member-auth.controller';
 import { MemberAuthService } from './member-auth.service';
 
 @Module({
-  imports: [
-    JwtModule,
-    TypeOrmModule.forFeature([MemberUserEntity]),
-  ],
+  imports: [JwtModule, TypeOrmModule.forFeature([MemberUserEntity])],
   controllers: [MemberAuthController],
   providers: [MemberAuthService],
   exports: [MemberAuthService],

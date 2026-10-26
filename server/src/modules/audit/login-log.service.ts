@@ -42,9 +42,7 @@ export class LoginLogService {
     currentUserId: string,
   ): Promise<PaginationResult<LoginLogListItem>> {
     const { page, pageSize, username, status, startTime, endTime } = query;
-    const qb = this.loginLogRepo
-      .createQueryBuilder('log')
-      .orderBy('log.createdAt', 'DESC');
+    const qb = this.loginLogRepo.createQueryBuilder('log').orderBy('log.createdAt', 'DESC');
 
     const filter = await this.dataScopeService.resolveForUser(currentUserId);
     const user = await this.userRepo.findOne({ where: { id: currentUserId } });

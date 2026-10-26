@@ -26,7 +26,7 @@
 
     <ElMenuItem
       v-else
-      :index="isExternalLink(item) ? undefined : item.path || item.meta.title"
+      :index="item.path || item.meta.title"
       :level-item="level + 1"
       @click="goPage(item)"
     >
@@ -175,15 +175,6 @@
     // 递归检查是否有可见的子菜单
     const filteredChildren = filterRoutes(item.children)
     return filteredChildren.length > 0
-  }
-
-  /**
-   * 判断是否为外部链接
-   * @param item 菜单项数据
-   * @returns 是否为外部链接
-   */
-  const isExternalLink = (item: AppRouteRecord): boolean => {
-    return !!(item.meta.link && !item.meta.isIframe)
   }
 
   /**

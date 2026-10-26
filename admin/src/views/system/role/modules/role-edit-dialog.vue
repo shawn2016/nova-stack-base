@@ -48,7 +48,7 @@
           placeholder="请选择部门"
           style="width: 100%"
           node-key="id"
-          :props="{ label: 'label', value: 'id', children: 'children' }"
+          :props="{ label: 'label', children: 'children' }"
         />
       </ElFormItem>
       <ElFormItem label="排序" prop="sort">
@@ -72,7 +72,7 @@
     DATA_SCOPE_ALL,
     DATA_SCOPE_CUSTOM,
     DATA_SCOPE_LABELS,
-    type DataScope,
+    type DataScope
   } from '@nova/shared-types'
   import { createRole, fetchRoleDetail, updateRole } from '@/api/system-manage'
   import { fetchDeptTreeAll } from '@/api/dept'
@@ -91,31 +91,36 @@
   const props = withDefaults(defineProps<Props>(), {
     visible: false,
     dialogType: 'add',
-    roleData: undefined,
+    roleData: undefined
   })
 
   const emit = defineEmits<Emits>()
 
   const formRef = ref<FormInstance>()
   const submitting = ref(false)
-  const deptOptions = ref<{ id: string; label: string; children?: typeof deptOptions.value }[]>([])
+  interface DeptOption {
+    id: string
+    label: string
+    children?: DeptOption[]
+  }
+  const deptOptions = ref<DeptOption[]>([])
 
   const dataScopeOptions = DATA_SCOPE_LABELS
 
   const visible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const rules = reactive<FormRules>({
     name: [
       { required: true, message: '请输入角色名称', trigger: 'blur' },
-      { min: 2, max: 32, message: '长度在 2 到 32 个字符', trigger: 'blur' },
+      { min: 2, max: 32, message: '长度在 2 到 32 个字符', trigger: 'blur' }
     ],
     code: [
       { required: true, message: '请输入角色编码', trigger: 'blur' },
-      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' },
-    ],
+      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+    ]
   })
 
   const form = reactive({
@@ -125,14 +130,14 @@
     sort: 0,
     enabled: true,
     dataScope: DATA_SCOPE_ALL as DataScope,
-    customDeptIds: [] as string[],
+    customDeptIds: [] as string[]
   })
 
   function mapDeptTree(nodes: DeptTreeNode[]): typeof deptOptions.value {
     return nodes.map((node) => ({
       id: node.id,
       label: node.name,
-      ...(node.children?.length ? { children: mapDeptTree(node.children) } : {}),
+      ...(node.children?.length ? { children: mapDeptTree(node.children) } : {})
     }))
   }
 
@@ -157,7 +162,7 @@
         sort: detail.sort,
         enabled: detail.status === 1,
         dataScope: detail.dataScope ?? DATA_SCOPE_ALL,
-        customDeptIds: [...(detail.customDeptIds ?? [])],
+        customDeptIds: [...(detail.customDeptIds ?? [])]
       })
     } else {
       Object.assign(form, {
@@ -167,7 +172,7 @@
         sort: 0,
         enabled: true,
         dataScope: DATA_SCOPE_ALL,
-        customDeptIds: [],
+        customDeptIds: []
       })
     }
   }
@@ -176,7 +181,7 @@
     () => props.visible,
     (newVal) => {
       if (newVal) void initForm()
-    },
+    }
   )
 
   watch(
@@ -184,7 +189,7 @@
     () => {
       if (props.visible) void initForm()
     },
-    { deep: true },
+    { deep: true }
   )
 
   watch(
@@ -193,7 +198,7 @@
       if (scope !== DATA_SCOPE_CUSTOM) {
         form.customDeptIds = []
       }
-    },
+    }
   )
 
   const handleClose = () => {
@@ -214,8 +219,7 @@
         sort: form.sort,
         status: (form.enabled ? 1 : 0) as 0 | 1,
         dataScope: form.dataScope,
-        customDeptIds:
-          form.dataScope === DATA_SCOPE_CUSTOM ? form.customDeptIds : [],
+        customDeptIds: form.dataScope === DATA_SCOPE_CUSTOM ? form.customDeptIds : []
       }
 
       if (props.dialogType === 'add') {

@@ -1,14 +1,22 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
   "rootDir": ".",
   "testEnvironment": "node",
-  "setupFiles": ["<rootDir>/setup-unit.ts"],
+  "setupFiles": [
+    "<rootDir>/setup-unit.ts"
+  ],
   "testMatch": [
     "<rootDir>/database/**/*.spec.ts",
     "<rootDir>/common/**/*.spec.ts",
     "<rootDir>/config/**/*.spec.ts",
     "<rootDir>/upload/**/*.spec.ts",
-    "<rootDir>/data-scope/**/*.spec.ts"
+    "<rootDir>/data-scope/**/*.spec.ts",
+    "<rootDir>/runtime/**/*.spec.ts",
+    "<rootDir>/job/**/*.spec.ts"
   ],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"

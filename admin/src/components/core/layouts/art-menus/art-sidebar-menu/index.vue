@@ -63,13 +63,10 @@
     <div
       v-show="menuList.length > 0"
       class="menu-left"
-      :class="[
-        `menu-left-${getMenuTheme.theme}`,
-        `menu-left-${!menuOpen ? 'close' : 'open'}`,
-      ]"
+      :class="[`menu-left-${getMenuTheme.theme}`, `menu-left-${!menuOpen ? 'close' : 'open'}`]"
       :style="{
         background: getMenuTheme.background,
-        width: isDualMenuCollapsed ? MENU_CLOSE_WIDTH : undefined,
+        width: isDualMenuCollapsed ? MENU_CLOSE_WIDTH : undefined
       }"
       @mouseenter="handleMenuMouseEnter"
       @mouseleave="handleMenuMouseLeave"
@@ -79,7 +76,7 @@
         class="header"
         @click="navigateToHome"
         :style="{
-          background: getMenuTheme.background,
+          background: getMenuTheme.background
         }"
       >
         <ArtLogo v-if="!isDualMenu" class="logo" />
@@ -88,7 +85,7 @@
           :class="{ 'is-dual-menu-name': isDualMenu }"
           :style="{
             color: getMenuTheme.systemNameColor,
-            opacity: !menuOpen ? 0 : 1,
+            opacity: !menuOpen ? 0 : 1
           }"
         >
           {{ AppConfig.systemInfo.name }}
@@ -119,11 +116,7 @@
         </ElScrollbar>
       </div>
 
-      <footer
-        v-if="!isMobileScreen"
-        class="menu-footer"
-        :class="{ 'is-collapsed': !menuOpen }"
-      >
+      <footer v-if="!isMobileScreen" class="menu-footer" :class="{ 'is-collapsed': !menuOpen }">
         <ElTooltip
           :content="menuOpen ? $t('sidebar.collapse') : $t('sidebar.expand')"
           placement="top"
@@ -193,8 +186,15 @@
   const router = useRouter()
   const settingStore = useSettingStore()
 
-  const { getMenuOpenWidth, menuType, uniqueOpened, dualMenuShowText, menuOpen, autoClose, getMenuTheme } =
-    storeToRefs(settingStore)
+  const {
+    getMenuOpenWidth,
+    menuType,
+    uniqueOpened,
+    dualMenuShowText,
+    menuOpen,
+    autoClose,
+    getMenuTheme
+  } = storeToRefs(settingStore)
 
   // 组件内部状态
   const defaultOpenedMenus = ref<string[]>([])
@@ -255,7 +255,6 @@
     const currentMenu = allMenus.find((menu) => menu.path === currentTopPath)
     return currentMenu?.children ?? []
   })
-
 
   /**
    * 延迟隐藏移动端模态框（使用 VueUse 的 useTimeoutFn）

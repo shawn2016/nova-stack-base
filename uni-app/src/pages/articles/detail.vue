@@ -7,12 +7,7 @@
     <view v-else class="article">
       <text class="title">{{ article.title }}</text>
       <text v-if="article.publishedAt" class="meta">{{ formatDate(article.publishedAt) }}</text>
-      <image
-        v-if="article.coverUrl"
-        class="cover"
-        :src="article.coverUrl"
-        mode="widthFix"
-      />
+      <image v-if="article.coverUrl" class="cover" :src="article.coverUrl" mode="widthFix" />
       <text v-if="article.summary" class="summary">{{ article.summary }}</text>
       <text class="content">{{ article.content }}</text>
     </view>

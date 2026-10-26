@@ -181,32 +181,6 @@ export async function scenarioUploadControl(page: Page) {
   await expect(page.locator('input[type="file"]').first()).toBeAttached();
 }
 
-/** 文章：跳转编辑页 */
-export async function scenarioArticleEdit(page: Page) {
-  await page.locator('.art-table-actions__link').filter({ hasText: '编辑' }).first().click();
-  await expect
-    .poll(() => page.url(), { timeout: 10_000 })
-    .toMatch(/#\/content\/articles\/\d+\/edit/);
-}
-
-/** 文章：删除确认 */
-export async function scenarioArticleDelete(page: Page) {
-  await scenarioDeleteConfirm(page);
-}
-
-/** 文章：搜索（状态下拉） */
-export async function scenarioArticleSearch(page: Page) {
-  const searchArea = page.locator('.art-list-panel__search');
-  const select = searchArea.locator('.el-select').first();
-  await expect(select).toBeVisible({ timeout: 15_000 });
-  await select.click();
-  const dropdown = page.locator('.el-select-dropdown:visible').last();
-  await expect(dropdown).toBeVisible({ timeout: 5_000 });
-  await dropdown.getByRole('option', { name: '已发布' }).click();
-  await searchArea.getByRole('button', { name: /^搜索$|^查询$|Search/i }).click();
-  await expect(page.locator('.el-table').first()).toBeVisible({ timeout: 15_000 });
-}
-
 /** 定时任务无搜索栏 */
 export function registerJobScenarios(module: string, path: string) {
   test(`${path} 新增弹窗`, { tag: scenarioTags(module, path, 'create') }, async ({ page }) => {
@@ -293,24 +267,6 @@ export function registerDictScenarios() {
   test(`${path} 删除确认`, { tag: scenarioTags(module, path, 'delete') }, async ({ page }) => {
     await openAdminPage(page, path);
     await scenarioDeleteConfirm(page, panel(page));
-  });
-}
-
-/** 文章页场景 */
-export function registerArticleScenarios() {
-  const module = 'article';
-  const path = '/content/articles';
-  test(`${path} 搜索筛选`, { tag: scenarioTags(module, path, 'search') }, async ({ page }) => {
-    await openAdminPage(page, path);
-    await scenarioArticleSearch(page);
-  });
-  test(`${path} 编辑页`, { tag: scenarioTags(module, path, 'update') }, async ({ page }) => {
-    await openAdminPage(page, path);
-    await scenarioArticleEdit(page);
-  });
-  test(`${path} 删除确认`, { tag: scenarioTags(module, path, 'delete') }, async ({ page }) => {
-    await openAdminPage(page, path);
-    await scenarioArticleDelete(page);
   });
 }
 

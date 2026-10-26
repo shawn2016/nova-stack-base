@@ -50,7 +50,7 @@
   const props = withDefaults(defineProps<Props>(), {
     visible: false,
     dialogType: 'add',
-    typeData: undefined,
+    typeData: undefined
   })
 
   const emit = defineEmits<Emits>()
@@ -60,18 +60,18 @@
 
   const visible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const rules = reactive<FormRules>({
     name: [
       { required: true, message: '请输入类型名称', trigger: 'blur' },
-      { max: 64, message: '最多 64 个字符', trigger: 'blur' },
+      { max: 64, message: '最多 64 个字符', trigger: 'blur' }
     ],
     code: [
       { required: true, message: '请输入类型编码', trigger: 'blur' },
-      { max: 64, message: '最多 64 个字符', trigger: 'blur' },
-    ],
+      { max: 64, message: '最多 64 个字符', trigger: 'blur' }
+    ]
   })
 
   const form = reactive({
@@ -79,7 +79,7 @@
     name: '',
     code: '',
     enabled: true,
-    remark: '',
+    remark: ''
   })
 
   const initForm = () => {
@@ -89,7 +89,7 @@
         name: props.typeData.name,
         code: props.typeData.code,
         enabled: props.typeData.status === 1,
-        remark: props.typeData.remark ?? '',
+        remark: props.typeData.remark ?? ''
       })
     } else {
       Object.assign(form, {
@@ -97,7 +97,7 @@
         name: '',
         code: '',
         enabled: true,
-        remark: '',
+        remark: ''
       })
     }
   }
@@ -106,7 +106,7 @@
     () => props.visible,
     (newVal) => {
       if (newVal) initForm()
-    },
+    }
   )
 
   watch(
@@ -114,7 +114,7 @@
     () => {
       if (props.visible) initForm()
     },
-    { deep: true },
+    { deep: true }
   )
 
   const handleClose = () => {
@@ -137,14 +137,14 @@
           name: form.name,
           code: form.code,
           status,
-          remark,
+          remark
         })
         ElMessage.success('新增成功')
       } else {
         await updateDictType(form.id, {
           name: form.name,
           status,
-          remark,
+          remark
         })
         ElMessage.success('修改成功')
       }

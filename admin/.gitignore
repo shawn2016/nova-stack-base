@@ -5,7 +5,5 @@ dist-ssr
 *.local
 .cursorrules
 
-# Auto-generated files
-src/types/import/auto-imports.d.ts
-src/types/import/components.d.ts
+# Runtime generated metadata (type declarations are tracked for clean-checkout typecheck)
 .auto-import.json

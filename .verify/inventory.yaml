@@ -24,11 +24,9 @@ modules:
     expectedLayers: [api-e2e, browser-e2e]
 
   - id: article
-    name: 文章
+    name: 用户端文章示例 API
     apiSuites: [article]
-    adminPages:
-      - { path: /content/articles, name: 文章管理 }
-    expectedLayers: [api-e2e, browser-e2e]
+    expectedLayers: [api-e2e]
 
   - id: audit
     name: 审计日志

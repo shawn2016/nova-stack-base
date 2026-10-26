@@ -46,7 +46,7 @@
   const props = withDefaults(defineProps<Props>(), {
     visible: false,
     dialogType: 'add',
-    noticeData: undefined,
+    noticeData: undefined
   })
 
   const emit = defineEmits<Emits>()
@@ -56,20 +56,20 @@
 
   const visible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const rules = reactive<FormRules>({
     title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
     type: [{ required: true, message: '请选择类型', trigger: 'change' }],
-    content: [{ required: true, message: '请输入内容', trigger: 'blur' }],
+    content: [{ required: true, message: '请输入内容', trigger: 'blur' }]
   })
 
   const form = reactive({
     id: '',
     title: '',
     content: '',
-    type: 1 as 1 | 2,
+    type: 1 as 1 | 2
   })
 
   function initForm() {
@@ -78,7 +78,7 @@
         id: props.noticeData.id,
         title: props.noticeData.title,
         content: props.noticeData.content,
-        type: props.noticeData.type,
+        type: props.noticeData.type
       })
     } else {
       Object.assign(form, { id: '', title: '', content: '', type: 1 as 1 | 2 })
@@ -89,7 +89,7 @@
     () => props.visible,
     (val) => {
       if (val) initForm()
-    },
+    }
   )
 
   function handleClose() {
@@ -105,14 +105,14 @@
         await createNotice({
           title: form.title,
           content: form.content,
-          type: form.type,
+          type: form.type
         })
         ElMessage.success('创建成功')
       } else {
         await updateNotice(form.id, {
           title: form.title,
           content: form.content,
-          type: form.type,
+          type: form.type
         })
         ElMessage.success('更新成功')
       }

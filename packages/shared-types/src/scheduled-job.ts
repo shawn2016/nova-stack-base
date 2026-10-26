@@ -17,7 +17,7 @@ export interface JobListItem {
   updatedAt: string;
 }
 
-export interface JobDetail extends JobListItem {}
+export type JobDetail = JobListItem;
 
 export interface CreateJobDto {
   name: string;
@@ -63,8 +63,9 @@ export interface JobHandlerInfo {
   description: string;
 }
 
+/** 异步执行已入队；实际成功/失败在任务日志查询。 */
 export interface RunJobResult {
-  logId: string;
-  status: JobLogStatus;
-  message: string | null;
+  executionId: string;
+  status: 'queued';
+  message: string;
 }

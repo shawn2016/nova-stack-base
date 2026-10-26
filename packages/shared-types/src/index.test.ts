@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ApiResponse,
-  ErrorCode,
-  PaginationParams,
-  PaginationResult,
-} from './index.js';
+import { ApiResponse, ErrorCode, PaginationParams, PaginationResult } from './index.js';
 
 describe('@nova/shared-types exports', () => {
   it('ErrorCode 枚举值符合约定', () => {

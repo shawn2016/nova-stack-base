@@ -49,10 +49,7 @@ export class IpBlacklistController {
   @Put(':id/status')
   @RequirePermission('security:ip-blacklist:update')
   @ApiOperation({ summary: '启停 IP 黑名单' })
-  updateStatus(
-    @Param('id') id: string,
-    @Body() body: UpdateIpBlacklistStatusBodyDto,
-  ) {
+  updateStatus(@Param('id') id: string, @Body() body: UpdateIpBlacklistStatusBodyDto) {
     return this.ipBlacklistService.updateStatus(id, body.status);
   }
 }

@@ -24,8 +24,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiOperation({ summary: 'B 端管理员登录' })
   login(@Body() body: LoginDto, @Req() req: Request) {
-    const trustProxy =
-      this.configService.get<boolean>('ipBlacklist.trustProxy') ?? false;
+    const trustProxy = this.configService.get<boolean>('ipBlacklist.trustProxy') ?? false;
     return this.authService.login(body, {
       ip: resolveClientIp(req, trustProxy),
       userAgent: req.headers['user-agent'],
@@ -59,10 +58,7 @@ export class AuthController {
   @Put('me')
   @ApiBearerAuth()
   @ApiOperation({ summary: '更新当前管理员资料' })
-  updateProfile(
-    @CurrentUser() user: AuthUser,
-    @Body() body: UpdateProfileDto,
-  ) {
+  updateProfile(@CurrentUser() user: AuthUser, @Body() body: UpdateProfileDto) {
     return this.authService.updateProfile(user.userId, body);
   }
 
@@ -70,10 +66,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: '修改当前管理员密码' })
-  changePassword(
-    @CurrentUser() user: AuthUser,
-    @Body() body: ChangePasswordDto,
-  ) {
+  changePassword(@CurrentUser() user: AuthUser, @Body() body: ChangePasswordDto) {
     return this.authService.changePassword(user.userId, body);
   }
 

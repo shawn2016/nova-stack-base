@@ -55,7 +55,7 @@
 
   const searchForm = ref<SiteConfigListQuery>({
     keyword: undefined,
-    group: undefined,
+    group: undefined
   })
 
   const showSearchBar = ref(true)
@@ -74,13 +74,13 @@
     resetSearchParams,
     handleSizeChange,
     handleCurrentChange,
-    refreshData,
+    refreshData
   } = useTable({
     core: {
       apiFn: fetchSiteConfigList,
       apiParams: {
         current: 1,
-        size: 20,
+        size: 20
       },
       columnsFactory: () => [
         { prop: 'configKey', label: '配置键', minWidth: 140 },
@@ -89,20 +89,20 @@
           prop: 'configValue',
           label: '配置值',
           minWidth: 180,
-          showOverflowTooltip: true,
+          showOverflowTooltip: true
         },
         {
           prop: 'configGroup',
           label: '分组',
           width: 100,
-          formatter: (row) => row.configGroup || '-',
+          formatter: (row) => row.configGroup || '-'
         },
         {
           prop: 'remark',
           label: '备注',
           minWidth: 120,
           showOverflowTooltip: true,
-          formatter: (row) => row.remark || '-',
+          formatter: (row) => row.remark || '-'
         },
         {
           prop: 'operation',
@@ -116,20 +116,20 @@
                   key: 'edit',
                   label: '编辑',
                   auth: 'system:config:update',
-                  onClick: () => buttonMoreClick({ key: 'edit' }, row),
+                  onClick: () => buttonMoreClick({ key: 'edit' }, row)
                 },
                 {
                   key: 'delete',
                   label: '删除',
                   danger: true,
                   auth: 'system:config:delete',
-                  onClick: () => buttonMoreClick({ key: 'delete' }, row),
-                },
-              ] satisfies TableActionItem[],
-            }),
-        },
-      ],
-    },
+                  onClick: () => buttonMoreClick({ key: 'delete' }, row)
+                }
+              ] satisfies TableActionItem[]
+            })
+        }
+      ]
+    }
   })
 
   const showDialog = (type: 'add' | 'edit', row?: SiteConfigListItem) => {
@@ -158,7 +158,7 @@
     ElMessageBox.confirm(`确定删除配置「${row.configName}」吗？`, '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
+      type: 'warning'
     })
       .then(async () => {
         await deleteSiteConfig(row.id)

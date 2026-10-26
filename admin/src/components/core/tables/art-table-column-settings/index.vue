@@ -54,10 +54,7 @@
               />
             </div>
             <div class="art-column-settings__cell art-column-settings__cell--title">
-              <span
-                class="art-column-settings__drag"
-                :class="{ 'is-disabled': isFixedRow(item) }"
-              >
+              <span class="art-column-settings__drag" :class="{ 'is-disabled': isFixedRow(item) }">
                 <ArtSvgIcon icon="ri:drag-move-2-fill" />
               </span>
               <span class="art-column-settings__label">
@@ -133,7 +130,7 @@
 
   const visible = computed({
     get: () => props.modelValue,
-    set: (value: boolean) => emit('update:modelValue', value),
+    set: (value: boolean) => emit('update:modelValue', value)
   })
 
   const draftColumns = ref<DraftColumn[]>([])
@@ -143,7 +140,7 @@
   const allSelected = computed(
     () =>
       selectableColumns.value.length > 0 &&
-      selectableColumns.value.every((col) => getColumnVisibility(col)),
+      selectableColumns.value.every((col) => getColumnVisibility(col))
   )
 
   const indeterminate = computed(() => {
@@ -157,13 +154,13 @@
       if (open) {
         draftColumns.value = cloneColumns(props.columns)
       }
-    },
+    }
   )
 
   function cloneColumns(columns: ColumnOption[]): DraftColumn[] {
     return columns.map((col) => ({
       ...col,
-      dragKey: getColumnKey(col),
+      dragKey: getColumnKey(col)
     }))
   }
 

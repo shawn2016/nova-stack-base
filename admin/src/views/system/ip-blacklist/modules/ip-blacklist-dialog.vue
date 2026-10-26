@@ -21,12 +21,7 @@
         />
       </ElFormItem>
       <ElFormItem label="备注" prop="remark">
-        <ElInput
-          v-model="formData.remark"
-          type="textarea"
-          :rows="3"
-          placeholder="可选"
-        />
+        <ElInput v-model="formData.remark" type="textarea" :rows="3" placeholder="可选" />
       </ElFormItem>
     </ElForm>
     <template #footer>
@@ -57,25 +52,24 @@
 
   const dialogVisible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const formData = reactive({
     ip: '',
     remark: '',
-    expiresAt: '' as string | null,
+    expiresAt: '' as string | null
   })
 
   const rules: FormRules = {
     ip: [
       { required: true, message: '请输入 IP 地址', trigger: 'blur' },
       {
-        pattern:
-          /^(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)$/,
+        pattern: /^(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)$/,
         message: '请输入合法 IPv4 地址',
-        trigger: 'blur',
-      },
-    ],
+        trigger: 'blur'
+      }
+    ]
   }
 
   function handleClosed() {
@@ -92,7 +86,7 @@
       await createIpBlacklist({
         ip: formData.ip.trim(),
         remark: formData.remark.trim() || undefined,
-        expiresAt: formData.expiresAt || null,
+        expiresAt: formData.expiresAt || null
       })
       ElMessage.success('已添加黑名单')
       dialogVisible.value = false

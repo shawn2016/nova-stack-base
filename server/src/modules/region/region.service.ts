@@ -5,11 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type {
-  PaginationResult,
-  RegionListItem,
-  RegionTreeNode,
-} from '@nova/shared-types';
+import type { PaginationResult, RegionListItem, RegionTreeNode } from '@nova/shared-types';
 import { Repository } from 'typeorm';
 import { SysRegionEntity } from '../../database/entities';
 import { toApiId } from '../../common/utils/to-api-id';

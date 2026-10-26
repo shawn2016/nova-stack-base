@@ -1,14 +1,6 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type {
-  PaginationResult,
-  SmsChannelDetail,
-  SmsChannelListItem,
-} from '@nova/shared-types';
+import type { PaginationResult, SmsChannelDetail, SmsChannelListItem } from '@nova/shared-types';
 import { Repository } from 'typeorm';
 import { SysSmsChannelEntity, SysSmsTemplateEntity } from '../../database/entities';
 import { toApiId } from '../../common/utils/to-api-id';

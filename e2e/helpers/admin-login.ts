@@ -33,7 +33,10 @@ export async function loginAsAdmin(page: Page): Promise<void> {
   await expect(usernameInput).toBeVisible({ timeout: 15_000 });
   await usernameInput.fill('admin');
   await passwordInput.fill('admin123');
-  await passDragVerify(page);
+  // 开发模式隐藏滑块；生产预览仍完成滑块验证。
+  if (await page.locator('.drag_verify').count()) {
+    await passDragVerify(page);
+  }
   await page.getByRole('button', { name: /登录|Login/i }).click();
   // Hash 路由：pathname 仍为 /auth/login，以 hash 或侧栏菜单判断登录成功
   await expect

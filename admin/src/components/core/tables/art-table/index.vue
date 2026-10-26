@@ -87,7 +87,7 @@
 
 <script setup lang="ts">
   import { ref, computed, nextTick, watchEffect, getCurrentInstance, useAttrs, inject } from 'vue'
-  import type { ElTable, TableProps } from 'element-plus'
+  import type { TableInstance, TableProps } from 'element-plus'
   import { storeToRefs } from 'pinia'
   import { ColumnOption } from '@/types'
   import { useTableStore } from '@/store/modules/table'
@@ -105,7 +105,7 @@
     get: () => listPanelTools?.columns.value ?? [],
     set: (value) => {
       if (listPanelTools) listPanelTools.columns.value = value
-    },
+    }
   })
 
   const compactToolsShowSearchBar = computed({
@@ -114,11 +114,11 @@
       if (listPanelTools && value !== undefined) {
         listPanelTools.showSearchBar.value = value
       }
-    },
+    }
   })
 
   const { width } = useWindowSize()
-  const elTableRef = ref<InstanceType<typeof ElTable> | null>(null)
+  const elTableRef = ref<TableInstance | null>(null)
   const paginationRef = ref<HTMLElement>()
   const tableHeaderRef = ref<HTMLElement>()
   const tableStore = useTableStore()

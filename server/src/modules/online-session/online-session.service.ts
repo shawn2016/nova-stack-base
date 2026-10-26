@@ -1,23 +1,17 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type {
+  DataScopeFilter,
   KickOnlineSessionResult,
   OnlineSessionListResult,
 } from '@nova/shared-types';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { JwtService } from '../../common/jwt/jwt.service';
-import { SysConfigEntity } from '../../database/entities';
-import { RedisService } from '../../redis/redis.service';
+import { AuthSessionEntity, SysConfigEntity, SysUserEntity } from '../../database/entities';
 import { DataScopeService } from '../data-scope/data-scope.service';
 import { ListOnlineSessionsDto } from './dto/list-online-sessions.dto';
 
-const SESSION_KEY_PREFIX = 'online:admin:';
 export const MODULE_ENABLED_KEY = 'online_session.module.enabled';
-
 interface OnlineSessionRecord {
   userId: string;
   username: string;
@@ -29,42 +23,27 @@ interface OnlineSessionRecord {
 @Injectable()
 export class OnlineSessionService {
   constructor(
-    private readonly redisService: RedisService,
     private readonly jwtService: JwtService,
-    @InjectRepository(SysConfigEntity)
-    private readonly configRepo: Repository<SysConfigEntity>,
+    @InjectRepository(SysConfigEntity) private readonly configRepo: Repository<SysConfigEntity>,
+    @InjectRepository(AuthSessionEntity)
+    private readonly sessionRepo: Repository<AuthSessionEntity>,
     private readonly dataScopeService: DataScopeService,
   ) {}
 
-  async register(
-    tokenId: string,
-    record: OnlineSessionRecord,
-    ttlSeconds: number,
-  ): Promise<void> {
-    if (!(await this.isModuleEnabled())) {
-      return;
-    }
-
-    const redis = this.redisService.getClient();
-    if (!redis) {
-      return;
-    }
-
-    const ttl = Math.max(ttlSeconds, 1);
-    await redis.set(
-      this.sessionKey(tokenId),
-      JSON.stringify(record),
-      'EX',
-      ttl,
+  async register(tokenId: string, record: OnlineSessionRecord, _ttlSeconds: number): Promise<void> {
+    // Auth always creates the authoritative row, even when the optional UI is disabled.
+    await this.sessionRepo.update(
+      { id: tokenId, type: 'admin' },
+      {
+        username: record.username,
+        ip: record.ip,
+        userAgent: record.userAgent,
+      },
     );
   }
 
   async remove(tokenId: string): Promise<void> {
-    const redis = this.redisService.getClient();
-    if (!redis) {
-      return;
-    }
-    await redis.del(this.sessionKey(tokenId));
+    await this.sessionRepo.delete({ id: tokenId });
   }
 
   async list(
@@ -73,74 +52,44 @@ export class OnlineSessionService {
     currentUserId: string,
   ): Promise<OnlineSessionListResult> {
     const { page = 1, pageSize = 10, keyword } = query;
-
-    if (!(await this.isModuleEnabled())) {
-      return {
-        list: [],
-        total: 0,
-        page,
-        pageSize,
-        currentTokenId,
-      };
+    if (
+      !Number.isInteger(page) ||
+      page < 1 ||
+      page > 10000 ||
+      !Number.isInteger(pageSize) ||
+      pageSize < 1 ||
+      pageSize > 100 ||
+      (keyword?.length ?? 0) > 64
+    ) {
+      throw new BadRequestException('Invalid session pagination or keyword');
     }
-
-    const redis = this.redisService.getClient();
-    if (!redis) {
-      return {
-        list: [],
-        total: 0,
-        page,
-        pageSize,
-        currentTokenId,
-      };
-    }
-
-    const keys = await this.findSessionKeys(redis);
-    const items = [];
-
-    for (const key of keys) {
-      const raw = await redis.get(key);
-      if (!raw) {
-        continue;
-      }
-      const record = JSON.parse(raw) as OnlineSessionRecord;
-      const tokenId = key.slice(SESSION_KEY_PREFIX.length);
-      items.push({
-        tokenId,
-        userId: record.userId,
-        username: record.username,
-        ip: record.ip,
-        userAgent: record.userAgent,
-        loginAt: record.loginAt,
+    const empty = { list: [], total: 0, page, pageSize, currentTokenId };
+    if (!(await this.isModuleEnabled())) return empty;
+    const qb = this.activeQuery();
+    this.applyScope(qb, await this.dataScopeService.resolveForUser(currentUserId));
+    if (keyword?.trim()) {
+      const escaped = keyword.trim().toLowerCase().replace(/[!%_]/g, '!$&');
+      qb.andWhere("(LOWER(s.username) LIKE :kw ESCAPE '!' OR LOWER(s.ip) LIKE :kw ESCAPE '!')", {
+        kw: `%${escaped}%`,
       });
     }
-
-    items.sort(
-      (a, b) =>
-        new Date(b.loginAt).getTime() - new Date(a.loginAt).getTime(),
-    );
-
-    const kw = keyword?.trim().toLowerCase();
-    let filtered = kw
-      ? items.filter(
-          (item) =>
-            item.username.toLowerCase().includes(kw) ||
-            item.ip.toLowerCase().includes(kw),
-        )
-      : items;
-
-    const scopeFilter = await this.dataScopeService.resolveForUser(currentUserId);
-    filtered = await this.dataScopeService.filterSessionsByScope(
-      filtered,
-      scopeFilter,
-    );
-
-    const start = (page - 1) * pageSize;
-    const list = filtered.slice(start, start + pageSize);
-
+    const [rows, total] = await qb
+      .orderBy('s.loginAt', 'DESC')
+      .addOrderBy('s.id', 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .maxExecutionTime(1500)
+      .getManyAndCount();
     return {
-      list,
-      total: filtered.length,
+      list: rows.map((row) => ({
+        tokenId: row.id,
+        userId: String(row.userId),
+        username: row.username,
+        ip: row.ip,
+        userAgent: row.userAgent,
+        loginAt: row.loginAt.toISOString(),
+      })),
+      total,
       page,
       pageSize,
       currentTokenId,
@@ -150,56 +99,48 @@ export class OnlineSessionService {
   async kick(
     tokenId: string,
     operatorTokenId: string,
-    accessTokenTtlSeconds: number,
+    _accessTokenTtlSeconds: number,
+    operatorUserId?: string,
   ): Promise<KickOnlineSessionResult> {
-    if (tokenId === operatorTokenId) {
-      throw new BadRequestException('Cannot kick current session');
-    }
-
-    const redis = this.redisService.getClient();
-    if (!redis) {
-      throw new NotFoundException('Session not found');
-    }
-
-    const key = this.sessionKey(tokenId);
-    const exists = await redis.exists(key);
-    if (!exists) {
-      throw new NotFoundException('Session not found');
-    }
-
-    await this.jwtService.blacklist(tokenId, Math.max(accessTokenTtlSeconds, 1));
-    await redis.del(key);
-
+    if (tokenId === operatorTokenId) throw new BadRequestException('Cannot kick current session');
+    const qb = this.activeQuery().andWhere('s.id = :tokenId', { tokenId });
+    if (operatorUserId)
+      this.applyScope(qb, await this.dataScopeService.resolveForUser(operatorUserId));
+    if (!(await qb.getExists())) throw new NotFoundException('Session not found');
+    await this.jwtService.revokeSession(tokenId);
     return { success: true };
   }
 
-  private sessionKey(tokenId: string): string {
-    return `${SESSION_KEY_PREFIX}${tokenId}`;
+  private activeQuery(): SelectQueryBuilder<AuthSessionEntity> {
+    return this.sessionRepo
+      .createQueryBuilder('s')
+      .innerJoin(SysUserEntity, 'u', 'u.id = s.user_id AND u.status = 1')
+      .where("s.type = :type AND s.expires_at > :now AND s.username <> ''", {
+        type: 'admin',
+        now: new Date(),
+      });
   }
 
-  private async findSessionKeys(
-    redis: NonNullable<ReturnType<RedisService['getClient']>>,
-  ): Promise<string[]> {
-    if (typeof redis.keys === 'function') {
-      return redis.keys(`${SESSION_KEY_PREFIX}*`);
+  private applyScope(qb: SelectQueryBuilder<AuthSessionEntity>, filter: DataScopeFilter): void {
+    if (filter.type === 'all') return;
+    if (filter.type === 'none') {
+      qb.andWhere('1 = 0');
+      return;
     }
-
-    const store = (redis as { _store?: Map<string, string> })._store;
-    if (store) {
-      return [...store.keys()].filter((key) =>
-        key.startsWith(SESSION_KEY_PREFIX),
-      );
+    if (filter.type === 'self') {
+      qb.andWhere('s.user_id = :scopeUserId', { scopeUserId: filter.userId });
+      return;
     }
-
-    return [];
+    if (!filter.deptIds.length) {
+      qb.andWhere('1 = 0');
+      return;
+    }
+    qb.andWhere('u.dept_id IN (:...scopeDeptIds)', { scopeDeptIds: filter.deptIds });
   }
 
   private async isModuleEnabled(): Promise<boolean> {
-    const config = await this.configRepo.findOne({
-      where: { configKey: MODULE_ENABLED_KEY },
-    });
+    const config = await this.configRepo.findOne({ where: { configKey: MODULE_ENABLED_KEY } });
     return config?.configValue !== 'false';
   }
 }
-
 export type { OnlineSessionRecord };

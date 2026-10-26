@@ -1,7 +1,9 @@
-/** JWT 载荷（sub 为 string，对应 bigint 实体主键） */
+/** Session-bound JWT. Legacy tokens without purpose/sid require a new login. */
 export interface JwtPayload {
   sub: string;
   type: 'admin' | 'member';
+  purpose: 'access' | 'refresh';
+  sid: string;
   jti: string;
   iat: number;
   exp: number;
@@ -10,4 +12,5 @@ export interface JwtPayload {
 export interface SignTokenParams {
   userId: string;
   type: 'admin' | 'member';
+  sessionId?: string;
 }

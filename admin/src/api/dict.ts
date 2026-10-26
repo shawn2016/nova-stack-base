@@ -6,7 +6,7 @@ import type {
   DictTypeListItem,
   PaginationResult,
   UpdateDictDataDto,
-  UpdateDictTypeDto,
+  UpdateDictTypeDto
 } from '@nova/shared-types'
 import { request } from './request'
 
@@ -29,7 +29,7 @@ function toTableResponse<T>(result: PaginationResult<T>) {
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }
 }
 
@@ -41,8 +41,8 @@ export function fetchDictTypeList(params: DictTypeListQuery = {}) {
     params: {
       page: current,
       pageSize: size,
-      ...(keyword ? { keyword } : {}),
-    },
+      ...(keyword ? { keyword } : {})
+    }
   }).then(toTableResponse)
 }
 
@@ -50,7 +50,7 @@ export function createDictType(data: CreateDictTypeDto) {
   return request<DictTypeListItem>({
     url: '/dict/types',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -58,14 +58,14 @@ export function updateDictType(id: string, data: UpdateDictTypeDto) {
   return request<DictTypeListItem>({
     url: `/dict/types/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function deleteDictType(id: string) {
   return request<{ success: true }>({
     url: `/dict/types/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }
 
@@ -79,8 +79,8 @@ export function fetchDictDataList(params: DictDataListQuery = {}) {
       pageSize: size,
       ...(typeId ? { typeId } : {}),
       ...(typeCode ? { typeCode } : {}),
-      ...(keyword ? { keyword } : {}),
-    },
+      ...(keyword ? { keyword } : {})
+    }
   }).then(toTableResponse)
 }
 
@@ -88,7 +88,7 @@ export function createDictData(data: CreateDictDataDto) {
   return request<DictDataListItem>({
     url: '/dict/data',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -96,20 +96,20 @@ export function updateDictData(id: string, data: UpdateDictDataDto) {
   return request<DictDataListItem>({
     url: `/dict/data/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function deleteDictData(id: string) {
   return request<{ success: true }>({
     url: `/dict/data/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }
 
 export function fetchDictOptionsByType(code: string) {
   return request<DictOption[]>({
     url: `/dict/data/by-type/${encodeURIComponent(code)}`,
-    method: 'GET',
+    method: 'GET'
   })
 }

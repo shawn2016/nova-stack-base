@@ -43,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+  import type { IpBlacklistListQuery } from '@/api/ip-blacklist'
   import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
   import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
@@ -58,7 +59,7 @@
   const searchForm = reactive({
     keyword: '',
     source: '' as '' | 'manual' | 'auto',
-    status: undefined as number | undefined,
+    status: undefined as number | undefined
   })
 
   const formItems = computed(() => [
@@ -66,7 +67,7 @@
       label: '关键词',
       key: 'keyword',
       type: 'input',
-      props: { clearable: true, placeholder: 'IP 或备注' },
+      props: { clearable: true, placeholder: 'IP 或备注' }
     },
     {
       label: '来源',
@@ -76,9 +77,9 @@
         clearable: true,
         options: [
           { label: '手动', value: 'manual' },
-          { label: '自动', value: 'auto' },
-        ],
-      },
+          { label: '自动', value: 'auto' }
+        ]
+      }
     },
     {
       label: '状态',
@@ -88,10 +89,10 @@
         clearable: true,
         options: [
           { label: '启用', value: 1 },
-          { label: '停用', value: 0 },
-        ],
-      },
-    },
+          { label: '停用', value: 0 }
+        ]
+      }
+    }
   ])
 
   const {
@@ -104,21 +105,23 @@
     replaceSearchParams,
     handleSizeChange,
     handleCurrentChange,
-    refreshData,
-  } = useTable({
+    refreshData
+  } = useTable<
+    (params: IpBlacklistListQuery) => Promise<Api.Common.PaginatedResponse<IpBlacklistListItem>>
+  >({
     core: {
-      apiFn: async (params) => {
+      apiFn: async (params): Promise<Api.Common.PaginatedResponse<IpBlacklistListItem>> => {
         const result = await fetchIpBlacklistList(params)
         return {
           records: result.list,
           total: result.total,
           current: result.page,
-          size: result.pageSize,
+          size: result.pageSize
         }
       },
       apiParams: {
         current: 1,
-        size: 20,
+        size: 20
       },
       columnsFactory: () => [
         { prop: 'ip', label: 'IP', minWidth: 140 },
@@ -127,42 +130,37 @@
           label: '来源',
           width: 100,
           formatter: (row: IpBlacklistListItem) =>
-            h(
-              ElTag,
-              { type: row.source === 'auto' ? 'warning' : 'info', size: 'small' },
-              () => (row.source === 'auto' ? '自动' : '手动'),
-            ),
+            h(ElTag, { type: row.source === 'auto' ? 'warning' : 'info', size: 'small' }, () =>
+              row.source === 'auto' ? '自动' : '手动'
+            )
         },
         {
           prop: 'status',
           label: '状态',
           width: 90,
           formatter: (row: IpBlacklistListItem) =>
-            h(
-              ElTag,
-              { type: row.status === 1 ? 'danger' : 'info', size: 'small' },
-              () => (row.status === 1 ? '封禁中' : '已停用'),
-            ),
+            h(ElTag, { type: row.status === 1 ? 'danger' : 'info', size: 'small' }, () =>
+              row.status === 1 ? '封禁中' : '已停用'
+            )
         },
         {
           prop: 'expiresAt',
           label: '过期时间',
           minWidth: 180,
           formatter: (row: IpBlacklistListItem) =>
-            row.expiresAt ? new Date(row.expiresAt).toLocaleString('zh-CN') : '永久',
+            row.expiresAt ? new Date(row.expiresAt).toLocaleString('zh-CN') : '永久'
         },
         {
           prop: 'remark',
           label: '备注',
           minWidth: 160,
-          formatter: (row: IpBlacklistListItem) => row.remark || '-',
+          formatter: (row: IpBlacklistListItem) => row.remark || '-'
         },
         {
           prop: 'createdAt',
           label: '创建时间',
           minWidth: 180,
-          formatter: (row: IpBlacklistListItem) =>
-            new Date(row.createdAt).toLocaleString('zh-CN'),
+          formatter: (row: IpBlacklistListItem) => new Date(row.createdAt).toLocaleString('zh-CN')
         },
         {
           prop: 'operation',
@@ -177,13 +175,13 @@
                   label: '解除',
                   danger: true,
                   auth: 'security:ip-blacklist:delete',
-                  onClick: () => handleDelete(row),
-                },
-              ] satisfies TableActionItem[],
-            }),
-        },
-      ],
-    },
+                  onClick: () => handleDelete(row)
+                }
+              ] satisfies TableActionItem[]
+            })
+        }
+      ]
+    }
   })
 
   function handleReset() {
@@ -197,14 +195,14 @@
     replaceSearchParams({
       keyword: searchForm.keyword || undefined,
       source: searchForm.source || undefined,
-      status: searchForm.status,
+      status: searchForm.status
     })
     getData()
   }
 
   async function handleDelete(row: IpBlacklistListItem) {
     await ElMessageBox.confirm(`确定解除对 ${row.ip} 的封禁吗？`, '解除确认', {
-      type: 'warning',
+      type: 'warning'
     })
     await deleteIpBlacklist(row.id)
     ElMessage.success('已解除封禁')

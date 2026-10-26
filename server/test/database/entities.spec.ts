@@ -72,13 +72,14 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 29 entities with expected table names', () => {
+  it('loads all 30 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
 
     expect(tableNames).toEqual([
       'article',
+      'auth_session',
       'member_user',
       'sys_config',
       'sys_dept',

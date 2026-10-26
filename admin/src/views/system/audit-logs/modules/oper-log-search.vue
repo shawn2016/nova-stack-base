@@ -35,14 +35,14 @@
 
   const formData = computed({
     get: () => props.modelValue,
-    set: (val) => emit('update:modelValue', val),
+    set: (val) => emit('update:modelValue', val)
   })
 
   const rules = {}
 
   const statusOptions = [
     { label: '成功', value: 1 },
-    { label: '失败', value: 0 },
+    { label: '失败', value: 0 }
   ]
 
   const formItems = computed(() => [
@@ -51,14 +51,14 @@
       key: 'username',
       type: 'input',
       placeholder: '请输入用户名',
-      clearable: true,
+      clearable: true
     },
     {
       label: '模块',
       key: 'module',
       type: 'input',
       placeholder: '如 dict、users',
-      clearable: true,
+      clearable: true
     },
     {
       label: '状态',
@@ -67,8 +67,8 @@
       props: {
         placeholder: '请选择状态',
         options: statusOptions,
-        clearable: true,
-      },
+        clearable: true
+      }
     },
     {
       label: '时间范围',
@@ -79,9 +79,9 @@
         valueFormat: 'YYYY-MM-DDTHH:mm:ss.SSS[Z]',
         startPlaceholder: '开始时间',
         endPlaceholder: '结束时间',
-        clearable: true,
-      },
-    },
+        clearable: true
+      }
+    }
   ])
 
   function toQueryParams(params: OperLogSearchForm): OperLogListQuery {
@@ -89,7 +89,7 @@
     return {
       ...rest,
       ...(dateRange?.[0] ? { startTime: dateRange[0] } : {}),
-      ...(dateRange?.[1] ? { endTime: dateRange[1] } : {}),
+      ...(dateRange?.[1] ? { endTime: dateRange[1] } : {})
     }
   }
 

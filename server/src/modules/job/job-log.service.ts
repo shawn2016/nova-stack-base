@@ -12,11 +12,7 @@ export class JobLogService {
     private readonly logRepo: Repository<SysJobLogEntity>,
   ) {}
 
-  async list(query: {
-    page?: number;
-    pageSize?: number;
-    jobId?: string;
-  }) {
+  async list(query: { page?: number; pageSize?: number; jobId?: string }) {
     const { page = 1, pageSize = 10, jobId } = query;
     const qb = this.logRepo.createQueryBuilder('l').orderBy('l.startTime', 'DESC');
 
@@ -50,7 +46,7 @@ export class JobLogService {
         jobGroup: job.jobGroup,
         invokeTarget: job.invokeTarget,
         status: 1,
-        message,
+        message: message.slice(0, 500),
         exceptionInfo: null,
         startTime,
         endTime,
@@ -63,10 +59,10 @@ export class JobLogService {
     job: SysJobEntity,
     error: unknown,
     startTime: Date,
+    execution?: { executionId: string; attempt: number; retry: boolean },
   ): Promise<SysJobLogEntity> {
     const endTime = new Date();
-    const exceptionInfo =
-      error instanceof Error ? error.stack ?? error.message : String(error);
+    const exceptionInfo = error instanceof Error ? (error.stack ?? error.message) : String(error);
 
     return this.logRepo.save(
       this.logRepo.create({
@@ -75,7 +71,12 @@ export class JobLogService {
         jobGroup: job.jobGroup,
         invokeTarget: job.invokeTarget,
         status: 0,
-        message: '执行失败',
+        message: execution
+          ? `[${execution.executionId} attempt=${execution.attempt}] 执行失败，${execution.retry ? '等待重试' : '已终止'}`.slice(
+              0,
+              500,
+            )
+          : '执行失败',
         exceptionInfo,
         startTime,
         endTime,

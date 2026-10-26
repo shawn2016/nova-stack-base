@@ -1,3 +1,5 @@
+import { JwtService } from '../../../common/jwt/jwt.service';
+import { PermissionCacheService } from '../../../common/jwt/permission-cache.service';
 import {
   BadRequestException,
   ConflictException,
@@ -8,11 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { PaginationResult, SysUserDetail, SysUserListItem } from '@nova/shared-types';
 import * as bcrypt from 'bcrypt';
 import { In, Repository } from 'typeorm';
-import {
-  SysRoleEntity,
-  SysUserEntity,
-  SysUserRoleEntity,
-} from '../../../database/entities';
+import { SysRoleEntity, SysUserEntity, SysUserRoleEntity } from '../../../database/entities';
 import { toApiId } from '../../../common/utils/to-api-id';
 import { DeptService } from '../../dept/dept.service';
 import { DataScopeService } from '../../data-scope/data-scope.service';
@@ -24,6 +22,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
 export class UserService {
   constructor(
+    private readonly jwtService: JwtService,
+    private readonly permissionCache: PermissionCacheService,
     @InjectRepository(SysUserEntity)
     private readonly userRepo: Repository<SysUserEntity>,
     @InjectRepository(SysUserRoleEntity)
@@ -34,7 +34,10 @@ export class UserService {
     private readonly dataScopeService: DataScopeService,
   ) {}
 
-  async list(query: ListUsersDto, currentUserId: string): Promise<PaginationResult<SysUserListItem>> {
+  async list(
+    query: ListUsersDto,
+    currentUserId: string,
+  ): Promise<PaginationResult<SysUserListItem>> {
     const { page = 1, pageSize = 10, keyword } = query;
     const qb = this.userRepo.createQueryBuilder('u').orderBy('u.id', 'ASC');
 
@@ -76,59 +79,63 @@ export class UserService {
       avatar: null,
       status: dto.status ?? 1,
       deptId:
-        dto.deptId !== undefined
-          ? await this.deptService.resolveActiveDeptId(dto.deptId)
-          : null,
+        dto.deptId !== undefined ? await this.deptService.resolveActiveDeptId(dto.deptId) : null,
     });
     const saved = await this.userRepo.save(user);
     return this.toDetail(saved);
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<SysUserDetail> {
-    const user = await this.findEntityById(id);
+    return this.permissionCache.mutate(async () => {
+      const user = await this.findEntityById(id);
 
-    if (dto.nickname !== undefined) user.nickname = dto.nickname;
-    if (dto.status !== undefined) user.status = dto.status;
-    if (dto.deptId !== undefined) {
-      user.deptId = await this.deptService.resolveActiveDeptId(dto.deptId);
-    }
+      if (dto.nickname !== undefined) user.nickname = dto.nickname;
+      if (dto.status !== undefined) user.status = dto.status;
+      if (dto.deptId !== undefined) {
+        user.deptId = await this.deptService.resolveActiveDeptId(dto.deptId);
+      }
 
-    const saved = await this.userRepo.save(user);
-    return this.toDetail(saved);
+      const saved = await this.userRepo.save(user);
+      if (saved.status !== 1) await this.jwtService.revokeAccountSessions('admin', String(id));
+      return this.toDetail(saved);
+    });
   }
 
   async assignRoles(id: string, dto: AssignUserRolesDto): Promise<SysUserDetail> {
-    await this.findEntityById(id);
+    return this.permissionCache.mutate(async () => {
+      await this.findEntityById(id);
 
-    const roleIds = dto.roleIds.map(String);
-    if (roleIds.length > 0) {
-      const roles = await this.roleRepo.find({ where: { id: In(roleIds) } });
-      if (roles.length !== roleIds.length) {
-        throw new BadRequestException('One or more roles not found');
+      const roleIds = dto.roleIds.map(String);
+      if (roleIds.length > 0) {
+        const roles = await this.roleRepo.find({ where: { id: In(roleIds) } });
+        if (roles.length !== roleIds.length) {
+          throw new BadRequestException('One or more roles not found');
+        }
       }
-    }
 
-    await this.userRoleRepo.delete({ userId: id });
+      await this.userRoleRepo.delete({ userId: id });
 
-    for (const roleId of roleIds) {
-      await this.userRoleRepo.save(
-        this.userRoleRepo.create({ userId: id, roleId }),
-      );
-    }
+      for (const roleId of roleIds) {
+        await this.userRoleRepo.save(this.userRoleRepo.create({ userId: id, roleId }));
+      }
 
-    const user = await this.findEntityById(id);
-    return this.toDetail(user);
+      const user = await this.findEntityById(id);
+      return this.toDetail(user);
+    });
   }
 
   async remove(id: string, currentUserId: string): Promise<{ success: true }> {
-    if (String(id) === String(currentUserId)) {
-      throw new BadRequestException('Cannot delete current login user');
-    }
+    return this.permissionCache.mutate(async () => {
+      if (String(id) === String(currentUserId)) {
+        throw new BadRequestException('Cannot delete current login user');
+      }
 
-    const user = await this.findEntityById(id);
-    await this.userRoleRepo.delete({ userId: id });
-    await this.userRepo.remove(user);
-    return { success: true };
+      const user = await this.findEntityById(id);
+      await this.userRoleRepo.delete({ userId: id });
+      await this.jwtService.revokeAccountSessions('admin', String(id));
+      await this.userRepo.remove(user);
+      return { success: true };
+    });
   }
 
   private async findEntityById(id: string): Promise<SysUserEntity> {
@@ -168,7 +175,7 @@ export class UserService {
       avatar: user.avatar ?? '',
       status: user.status as 0 | 1,
       deptId: user.deptId ? toApiId(user.deptId) : null,
-      deptName: user.deptId ? deptNameMap.get(toApiId(user.deptId)) ?? null : null,
+      deptName: user.deptId ? (deptNameMap.get(toApiId(user.deptId)) ?? null) : null,
       roleIds,
       roleCodes,
     };

@@ -1,5 +1,11 @@
 <template>
-  <ElDialog v-model="dialogVisible" title="测试发送" width="480px" align-center @closed="handleClosed">
+  <ElDialog
+    v-model="dialogVisible"
+    title="测试发送"
+    width="480px"
+    align-center
+    @closed="handleClosed"
+  >
     <ElForm :model="form" label-width="88px">
       <ElFormItem label="模板" required>
         <ElSelect v-model="form.templateCode" style="width: 100%">
@@ -49,13 +55,13 @@
 
   const dialogVisible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const form = reactive({
     templateCode: '',
     to: 'user@example.com',
-    paramsJson: '{"siteName":"Nova Stack"}',
+    paramsJson: '{"siteName":"Nova Stack"}'
   })
 
   function initForm() {
@@ -74,7 +80,7 @@
     () => [props.visible, props.templates] as const,
     ([visible]) => {
       if (visible) initForm()
-    },
+    }
   )
 
   async function handleSubmit() {
@@ -84,7 +90,7 @@
       await sendEmail({
         to: form.to,
         templateCode: form.templateCode,
-        params,
+        params
       })
       ElMessage.success('发送成功')
       dialogVisible.value = false

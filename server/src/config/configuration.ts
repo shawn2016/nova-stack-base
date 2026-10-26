@@ -3,10 +3,9 @@ import { registerAs } from '@nestjs/config';
 export default registerAs('app', () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: parseInt(process.env.PORT ?? '3000', 10),
+  role: process.env.APP_ROLE ?? (process.env.NODE_ENV === 'production' ? 'api' : 'all'),
   skipExternalServices: process.env.SKIP_EXTERNAL_SERVICES === 'true',
-  corsOrigins:
-    process.env.CORS_ORIGINS ??
-    'http://localhost:5173,http://localhost:5174',
+  corsOrigins: process.env.CORS_ORIGINS ?? 'http://localhost:5173,http://localhost:5174',
 }));
 
 export const databaseConfig = registerAs('database', () => ({
@@ -15,11 +14,22 @@ export const databaseConfig = registerAs('database', () => ({
   username: process.env.DB_USERNAME ?? 'root',
   password: process.env.DB_PASSWORD ?? '',
   database: process.env.DB_DATABASE ?? 'nova_stack',
+  synchronize: process.env.NODE_ENV !== 'production' && process.env.DB_SYNCHRONIZE === 'true',
+  poolSize: Number(process.env.DB_POOL_SIZE ?? 10),
+  connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT ?? 10000),
+  maxQueryExecutionTime: Number(process.env.DB_MAX_QUERY_EXECUTION_TIME ?? 1000),
 }));
 
 export const redisConfig = registerAs('redis', () => ({
   host: process.env.REDIS_HOST ?? 'localhost',
   port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
+  db: Number(process.env.REDIS_DB ?? 0),
+  keyPrefix: process.env.REDIS_KEY_PREFIX ?? 'nova:dev:',
+  username: process.env.REDIS_USERNAME || undefined,
+  password: process.env.REDIS_PASSWORD || undefined,
+  tls: process.env.REDIS_TLS === 'true' ? {} : undefined,
+  connectTimeout: Number(process.env.REDIS_CONNECT_TIMEOUT ?? 5000),
+  commandTimeout: Number(process.env.REDIS_COMMAND_TIMEOUT ?? 3000),
 }));
 
 export const jwtConfig = registerAs('jwt', () => ({

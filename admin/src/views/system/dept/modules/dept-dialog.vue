@@ -46,14 +46,14 @@
 
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
-  import type { DeptListItem, DeptTreeNode } from '@nova/shared-types'
+  import type { DeptTreeNode } from '@nova/shared-types'
   import { createDept, updateDept } from '@/api/dept'
 
   interface Props {
     visible: boolean
-    editData?: DeptListItem | null
+    editData?: DeptTreeNode | null
     parentId?: string
-    deptOptions: DeptListItem[]
+    deptOptions: DeptTreeNode[]
   }
 
   interface Emits {
@@ -65,7 +65,7 @@
     visible: false,
     editData: null,
     parentId: '0',
-    deptOptions: () => [],
+    deptOptions: () => []
   })
 
   const emit = defineEmits<Emits>()
@@ -81,12 +81,12 @@
     leader: '',
     phone: '',
     sort: 0,
-    status: 1 as 0 | 1,
+    status: 1 as 0 | 1
   })
 
   const rules: FormRules = {
     parentId: [{ required: true, message: '请选择上级部门', trigger: 'change' }],
-    name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
+    name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }]
   }
 
   const dialogTitle = computed(() => (isEdit.value ? '编辑部门' : '新增部门'))
@@ -94,20 +94,9 @@
   const parentOptions = computed(() =>
     props.deptOptions.map((item) => ({
       id: item.id,
-      label: item.name,
-    })),
+      label: item.name
+    }))
   )
-
-  function flattenTree(nodes: DeptTreeNode[], prefix = ''): DeptListItem[] {
-    const result: DeptListItem[] = []
-    for (const { children, ...item } of nodes) {
-      result.push({ ...item, name: prefix ? `${prefix} / ${item.name}` : item.name })
-      if (children?.length) {
-        result.push(...flattenTree(children, prefix ? `${prefix} / ${item.name}` : item.name))
-      }
-    }
-    return result
-  }
 
   watch(
     () => [props.visible, props.editData, props.parentId] as const,
@@ -121,11 +110,11 @@
         leader: editData?.leader ?? '',
         phone: editData?.phone ?? '',
         sort: editData?.sort ?? 0,
-        status: editData?.status ?? 1,
+        status: editData?.status ?? 1
       })
       nextTick(() => formRef.value?.clearValidate())
     },
-    { immediate: true },
+    { immediate: true }
   )
 
   function handleCancel() {
@@ -147,7 +136,7 @@
         leader: form.leader || null,
         phone: form.phone || null,
         sort: form.sort,
-        status: form.status,
+        status: form.status
       }
       if (isEdit.value && form.id) {
         await updateDept(form.id, payload)

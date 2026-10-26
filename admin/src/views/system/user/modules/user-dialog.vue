@@ -40,7 +40,7 @@
           placeholder="请选择部门"
           style="width: 100%"
           node-key="id"
-          :props="{ label: 'label', value: 'id', children: 'children' }"
+          :props="{ label: 'label', children: 'children' }"
         />
       </ElFormItem>
       <ElFormItem label="角色" prop="roleIds">
@@ -64,12 +64,7 @@
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
   import type { SysUserListItem } from '@nova/shared-types'
-  import {
-    assignUserRoles,
-    createUser,
-    fetchRoleList,
-    updateUser,
-  } from '@/api/system-manage'
+  import { assignUserRoles, createUser, fetchRoleList, updateUser } from '@/api/system-manage'
   import { fetchDeptSettings, fetchDeptTree } from '@/api/dept'
   import type { DeptTreeNode } from '@nova/shared-types'
 
@@ -95,7 +90,7 @@
 
   const dialogVisible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const dialogType = computed(() => props.type)
@@ -106,22 +101,22 @@
     nickname: '',
     status: 1 as 0 | 1,
     roleIds: [] as string[],
-    deptId: null as string | null,
+    deptId: null as string | null
   })
 
   const rules = computed<FormRules>(() => ({
     username: [
       { required: true, message: '请输入用户名', trigger: 'blur' },
-      { min: 2, max: 32, message: '长度在 2 到 32 个字符', trigger: 'blur' },
+      { min: 2, max: 32, message: '长度在 2 到 32 个字符', trigger: 'blur' }
     ],
     password:
       dialogType.value === 'add'
         ? [
             { required: true, message: '请输入密码', trigger: 'blur' },
-            { min: 6, max: 32, message: '长度在 6 到 32 个字符', trigger: 'blur' },
+            { min: 6, max: 32, message: '长度在 6 到 32 个字符', trigger: 'blur' }
           ]
         : [],
-    nickname: [{ max: 32, message: '昵称最多 32 个字符', trigger: 'blur' }],
+    nickname: [{ max: 32, message: '昵称最多 32 个字符', trigger: 'blur' }]
   }))
 
   async function loadRoleOptions() {
@@ -129,11 +124,13 @@
     roleOptions.value = result.records.map((role) => ({ id: role.id, name: role.name }))
   }
 
-  function mapDeptTree(nodes: DeptTreeNode[]): { id: string; label: string; children?: ReturnType<typeof mapDeptTree> }[] {
+  function mapDeptTree(
+    nodes: DeptTreeNode[]
+  ): { id: string; label: string; children?: ReturnType<typeof mapDeptTree> }[] {
     return nodes.map((node) => ({
       id: node.id,
       label: node.name,
-      ...(node.children?.length ? { children: mapDeptTree(node.children) } : {}),
+      ...(node.children?.length ? { children: mapDeptTree(node.children) } : {})
     }))
   }
 
@@ -158,7 +155,7 @@
       nickname: isEdit && row ? row.nickname || '' : '',
       status: isEdit && row ? (row.status ?? 1) : 1,
       roleIds: isEdit && row ? [...(row.roleIds ?? [])] : [],
-      deptId: isEdit && row ? row.deptId ?? null : null,
+      deptId: isEdit && row ? (row.deptId ?? null) : null
     })
   }
 
@@ -170,7 +167,7 @@
       nickname: '',
       status: 1,
       roleIds: [],
-      deptId: null,
+      deptId: null
     })
   }
 
@@ -184,7 +181,7 @@
         nextTick(() => formRef.value?.clearValidate())
       }
     },
-    { immediate: true },
+    { immediate: true }
   )
 
   async function handleSubmit() {
@@ -202,7 +199,7 @@
           password,
           nickname: nickname || undefined,
           status,
-          deptId: userBindingEnabled.value ? deptId : undefined,
+          deptId: userBindingEnabled.value ? deptId : undefined
         })
         if (roleIds.length) {
           await assignUserRoles(created.id, { roleIds })
@@ -212,7 +209,7 @@
         await updateUser(props.userData.id, {
           nickname: nickname || undefined,
           status,
-          deptId: userBindingEnabled.value ? deptId : undefined,
+          deptId: userBindingEnabled.value ? deptId : undefined
         })
         await assignUserRoles(props.userData.id, { roleIds })
         ElMessage.success('更新成功')

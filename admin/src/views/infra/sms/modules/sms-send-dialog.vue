@@ -1,5 +1,11 @@
 <template>
-  <ElDialog v-model="dialogVisible" title="测试发送" width="480px" align-center @closed="handleClosed">
+  <ElDialog
+    v-model="dialogVisible"
+    title="测试发送"
+    width="480px"
+    align-center
+    @closed="handleClosed"
+  >
     <ElForm :model="form" label-width="88px">
       <ElFormItem label="模板" required>
         <ElSelect v-model="form.templateCode" style="width: 100%">
@@ -15,7 +21,12 @@
         <ElInput v-model="form.phone" placeholder="13800138000" />
       </ElFormItem>
       <ElFormItem label="参数 JSON" required>
-        <ElInput v-model="form.paramsJson" type="textarea" :rows="3" placeholder='{"code":"123456"}' />
+        <ElInput
+          v-model="form.paramsJson"
+          type="textarea"
+          :rows="3"
+          placeholder='{"code":"123456"}'
+        />
       </ElFormItem>
     </ElForm>
     <template #footer>
@@ -44,13 +55,13 @@
 
   const dialogVisible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const form = reactive({
     templateCode: '',
     phone: '13800138000',
-    paramsJson: '{"code":"123456"}',
+    paramsJson: '{"code":"123456"}'
   })
 
   function initForm() {
@@ -69,7 +80,7 @@
     () => [props.visible, props.templates] as const,
     ([visible]) => {
       if (visible) initForm()
-    },
+    }
   )
 
   async function handleSubmit() {
@@ -79,7 +90,7 @@
       await sendSms({
         phone: form.phone,
         templateCode: form.templateCode,
-        params,
+        params
       })
       ElMessage.success('发送成功')
       dialogVisible.value = false

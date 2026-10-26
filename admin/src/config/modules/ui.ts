@@ -9,7 +9,7 @@ export const uiConfig = {
   /** Element Plus 全局组件尺寸 */
   elementSize: 'default' as ComponentSize,
   /** 主内容区四边统一内边距（px） */
-  contentInset: 10,
+  contentInset: 10
 } as const
 
 export type UiConfig = typeof uiConfig

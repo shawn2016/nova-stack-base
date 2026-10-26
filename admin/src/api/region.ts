@@ -3,7 +3,7 @@ import type {
   PaginationResult,
   RegionListItem,
   RegionTreeNode,
-  UpdateRegionDto,
+  UpdateRegionDto
 } from '@nova/shared-types'
 import { request } from './request'
 
@@ -20,14 +20,14 @@ function toTableResponse<T>(result: PaginationResult<T>) {
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }
 }
 
 export function fetchRegionTree() {
   return request<RegionTreeNode[]>({
     url: '/regions/tree',
-    method: 'GET',
+    method: 'GET'
   })
 }
 
@@ -41,15 +41,15 @@ export function fetchRegionList(params: RegionListQuery = {}) {
       pageSize: size,
       ...(keyword ? { keyword } : {}),
       ...(level !== undefined ? { level } : {}),
-      ...(parentId ? { parentId } : {}),
-    },
+      ...(parentId ? { parentId } : {})
+    }
   }).then(toTableResponse)
 }
 
 export function fetchRegionById(id: string) {
   return request<RegionListItem>({
     url: `/regions/${id}`,
-    method: 'GET',
+    method: 'GET'
   })
 }
 
@@ -57,7 +57,7 @@ export function createRegion(data: CreateRegionDto) {
   return request<RegionListItem>({
     url: '/regions',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -65,13 +65,13 @@ export function updateRegion(id: string, data: UpdateRegionDto) {
   return request<RegionListItem>({
     url: `/regions/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function deleteRegion(id: string) {
   return request<{ success: true }>({
     url: `/regions/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }

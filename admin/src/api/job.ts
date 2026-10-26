@@ -7,7 +7,7 @@ import type {
   PaginationResult,
   RunJobResult,
   UpdateJobDto,
-  UpdateJobStatusDto,
+  UpdateJobStatusDto
 } from '@nova/shared-types'
 import { request } from './request'
 
@@ -28,7 +28,7 @@ function buildListParams(params: { current?: number; size?: number; keyword?: st
   return {
     page: current,
     pageSize: size,
-    ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
+    ...(keyword?.trim() ? { keyword: keyword.trim() } : {})
   }
 }
 
@@ -37,14 +37,14 @@ function toTableResponse<T>(result: PaginationResult<T>) {
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }
 }
 
 export function fetchJobHandlers() {
   return request<JobHandlerInfo[]>({
     url: '/jobs/handlers',
-    method: 'GET',
+    method: 'GET'
   })
 }
 
@@ -52,14 +52,14 @@ export function fetchJobList(params: JobListQuery = {}) {
   return request<PaginationResult<JobListItem>>({
     url: '/jobs',
     method: 'GET',
-    params: buildListParams(params),
+    params: buildListParams(params)
   }).then(toTableResponse)
 }
 
 export function fetchJobDetail(id: string) {
   return request<JobDetail>({
     url: `/jobs/${id}`,
-    method: 'GET',
+    method: 'GET'
   })
 }
 
@@ -71,8 +71,8 @@ export function fetchJobLogList(params: JobLogListQuery = {}) {
     params: {
       page: current,
       pageSize: size,
-      ...(jobId ? { jobId } : {}),
-    },
+      ...(jobId ? { jobId } : {})
+    }
   }).then(toTableResponse)
 }
 
@@ -80,7 +80,7 @@ export function createJob(data: CreateJobDto) {
   return request<JobDetail>({
     url: '/jobs',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -88,7 +88,7 @@ export function updateJob(id: string, data: UpdateJobDto) {
   return request<JobDetail>({
     url: `/jobs/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
@@ -96,20 +96,20 @@ export function updateJobStatus(id: string, data: UpdateJobStatusDto) {
   return request<JobDetail>({
     url: `/jobs/${id}/status`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function runJob(id: string) {
   return request<RunJobResult>({
     url: `/jobs/${id}/run`,
-    method: 'POST',
+    method: 'POST'
   })
 }
 
 export function deleteJob(id: string) {
   return request<{ success: true }>({
     url: `/jobs/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }

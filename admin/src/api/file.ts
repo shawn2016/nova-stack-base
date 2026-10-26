@@ -14,7 +14,7 @@ function buildListParams(params: FileListQuery = {}) {
     page: current,
     pageSize: size,
     ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
-    ...(storage ? { storage } : {}),
+    ...(storage ? { storage } : {})
   }
 }
 
@@ -22,18 +22,18 @@ export function fetchFileList(params: FileListQuery = {}) {
   return request<PaginationResult<FileListItem>>({
     url: '/files',
     method: 'GET',
-    params: buildListParams(params),
+    params: buildListParams(params)
   }).then((result) => ({
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }))
 }
 
 export function deleteFile(id: string) {
   return request<{ success: true }>({
     url: `/files/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }

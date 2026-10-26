@@ -40,7 +40,7 @@
   const searchForm = ref<LoginLogSearchForm>({
     username: undefined,
     status: undefined,
-    dateRange: undefined,
+    dateRange: undefined
   })
 
   const showSearchBar = ref(true)
@@ -61,13 +61,13 @@
     resetSearchParams,
     handleSizeChange,
     handleCurrentChange,
-    refreshData,
+    refreshData
   } = useTable({
     core: {
       apiFn: fetchLoginLogs,
       apiParams: {
         current: 1,
-        size: 20,
+        size: 20
       },
       columnsFactory: () => [
         { prop: 'username', label: '用户名', minWidth: 120 },
@@ -77,7 +77,7 @@
           label: 'User-Agent',
           minWidth: 180,
           showOverflowTooltip: true,
-          formatter: (row: LoginLogListItem) => row.userAgent || '-',
+          formatter: (row: LoginLogListItem) => row.userAgent || '-'
         },
         {
           prop: 'status',
@@ -85,28 +85,26 @@
           width: 90,
           formatter: (row: LoginLogListItem) => {
             const success = row.status === 1
-            return h(
-              ElTag,
-              { type: success ? 'success' : 'danger' },
-              () => (success ? '成功' : '失败'),
+            return h(ElTag, { type: success ? 'success' : 'danger' }, () =>
+              success ? '成功' : '失败'
             )
-          },
+          }
         },
         {
           prop: 'message',
           label: '说明',
           minWidth: 140,
           showOverflowTooltip: true,
-          formatter: (row: LoginLogListItem) => row.message || '-',
+          formatter: (row: LoginLogListItem) => row.message || '-'
         },
         {
           prop: 'createdAt',
           label: '登录时间',
           width: 180,
-          formatter: (row: LoginLogListItem) => formatDate(row.createdAt),
-        },
-      ],
-    },
+          formatter: (row: LoginLogListItem) => formatDate(row.createdAt)
+        }
+      ]
+    }
   })
 
   const handleSearch = (params: LoginLogListQuery) => {

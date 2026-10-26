@@ -51,7 +51,7 @@
 
   const dialogVisible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const form = reactive({
@@ -59,7 +59,7 @@
     name: '',
     provider: 'mock' as 'mock' | 'aliyun' | 'tencent',
     config: '{}',
-    enabled: true,
+    enabled: true
   })
 
   function initForm() {
@@ -69,7 +69,7 @@
         name: props.channelData.name,
         provider: props.channelData.provider,
         config: props.channelData.config,
-        enabled: props.channelData.status === 1,
+        enabled: props.channelData.status === 1
       })
       return
     }
@@ -84,7 +84,7 @@
     () => [props.visible, props.dialogType, props.channelData] as const,
     ([visible]) => {
       if (visible) initForm()
-    },
+    }
   )
 
   async function handleSubmit() {
@@ -94,7 +94,7 @@
         name: form.name,
         provider: form.provider,
         config: form.config,
-        status: (form.enabled ? 1 : 0) as 0 | 1,
+        status: (form.enabled ? 1 : 0) as 0 | 1
       }
       if (props.dialogType === 'add') {
         await createSmsChannel(payload)

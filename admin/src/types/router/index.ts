@@ -73,7 +73,7 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
  * 扩展 Vue Router 的路由记录类型
  */
 export interface AppRouteRecord extends Omit<RouteRecordRaw, 'meta' | 'children' | 'component'> {
-  id?: number
+  id?: string | number
   meta: RouteMeta
   children?: AppRouteRecord[]
   component?: string | (() => Promise<any>)

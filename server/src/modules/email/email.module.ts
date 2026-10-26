@@ -14,11 +14,7 @@ import { EmailTemplateService } from './email-template.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      SysEmailChannelEntity,
-      SysEmailTemplateEntity,
-      SysEmailLogEntity,
-    ]),
+    TypeOrmModule.forFeature([SysEmailChannelEntity, SysEmailTemplateEntity, SysEmailLogEntity]),
   ],
   controllers: [EmailController],
   providers: [

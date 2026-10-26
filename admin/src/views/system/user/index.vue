@@ -59,7 +59,7 @@
   const showSearchBar = ref(true)
 
   const searchForm = ref<UserListQuery>({
-    keyword: undefined,
+    keyword: undefined
   })
 
   const {
@@ -73,14 +73,14 @@
     resetSearchParams,
     handleSizeChange,
     handleCurrentChange,
-    refreshData,
+    refreshData
   } = useTable({
     core: {
       apiFn: fetchUserList,
       apiParams: {
         current: 1,
         size: 20,
-        ...searchForm.value,
+        ...searchForm.value
       },
       columnsFactory: () => [
         { type: 'index', width: 60, label: '序号' },
@@ -91,7 +91,7 @@
           prop: 'roleCodes',
           label: '角色',
           minWidth: 160,
-          formatter: (row) => (row.roleCodes?.length ? row.roleCodes.join(', ') : '-'),
+          formatter: (row) => (row.roleCodes?.length ? row.roleCodes.join(', ') : '-')
         },
         {
           prop: 'status',
@@ -99,12 +99,10 @@
           width: 100,
           formatter: (row) => {
             const enabled = row.status === 1
-            return h(
-              ElTag,
-              { type: enabled ? 'success' : 'info' },
-              () => (enabled ? '启用' : '禁用'),
+            return h(ElTag, { type: enabled ? 'success' : 'info' }, () =>
+              enabled ? '启用' : '禁用'
             )
-          },
+          }
         },
         {
           prop: 'operation',
@@ -118,20 +116,20 @@
                   key: 'edit',
                   label: '编辑',
                   auth: 'system:user:update',
-                  onClick: () => showDialog('edit', row),
+                  onClick: () => showDialog('edit', row)
                 },
                 {
                   key: 'delete',
                   label: '删除',
                   danger: true,
                   auth: 'system:user:delete',
-                  onClick: () => handleDeleteUser(row),
-                },
-              ] satisfies TableActionItem[],
-            }),
-        },
-      ],
-    },
+                  onClick: () => handleDeleteUser(row)
+                }
+              ] satisfies TableActionItem[]
+            })
+        }
+      ]
+    }
   })
 
   const handleSearch = (params: UserListQuery) => {
@@ -151,7 +149,7 @@
     ElMessageBox.confirm(`确定要删除用户「${row.username}」吗？`, '删除用户', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
+      type: 'warning'
     })
       .then(async () => {
         await deleteUserApi(row.id)

@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  Article,
-  ArticleListItem,
-  CreateArticleDto,
-  UpdateArticleDto,
-} from './index.js';
+import { Article, ArticleListItem, CreateArticleDto, UpdateArticleDto } from './index.js';
 
 describe('article types', () => {
   it('Article 包含完整文章字段', () => {

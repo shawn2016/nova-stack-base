@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { FileListItem, PaginationResult, UploadResult } from '@nova/shared-types';
 import { randomUUID } from 'crypto';
@@ -14,12 +10,7 @@ import type { UpdateUploadSettingsDto } from './upload-settings.types';
 import { UploadSettingsService } from './upload-settings.service';
 import { UploadStorageAdapter } from './upload-storage.adapter';
 
-const ALLOWED_MIME_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-]);
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 
 const MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': '.jpg',
@@ -47,15 +38,12 @@ export class UploadService {
     return this.settingsService.updateSettings(dto);
   }
 
-  async upload(
-    file: Express.Multer.File | undefined,
-    userId: string,
-  ): Promise<UploadResult> {
+  async upload(file: Express.Multer.File | undefined, userId: string): Promise<UploadResult> {
     if (!file) {
       throw new BadRequestException('File is required');
     }
 
-    const runtime = await this.settingsService.getRuntimeConfig(false);
+    const runtime = await this.settingsService.getRuntimeConfig();
 
     if (file.size > runtime.maxSize) {
       throw new BadRequestException('File size exceeds limit');
@@ -86,15 +74,12 @@ export class UploadService {
 
   async list(query: ListFilesDto): Promise<PaginationResult<FileListItem>> {
     const { page = 1, pageSize = 20, keyword, storage } = query;
-    const qb = this.fileRepo
-      .createQueryBuilder('f')
-      .orderBy('f.createdAt', 'DESC');
+    const qb = this.fileRepo.createQueryBuilder('f').orderBy('f.createdAt', 'DESC');
 
     if (keyword?.trim()) {
-      qb.andWhere(
-        '(f.url LIKE :kw OR f.object_key LIKE :kw OR f.original_name LIKE :kw)',
-        { kw: `%${keyword.trim()}%` },
-      );
+      qb.andWhere('(f.url LIKE :kw OR f.object_key LIKE :kw OR f.original_name LIKE :kw)', {
+        kw: `%${keyword.trim()}%`,
+      });
     }
 
     if (storage) {
@@ -110,9 +95,7 @@ export class UploadService {
     const uploaders = uploaderIds.length
       ? await this.userRepo.find({ where: { id: In(uploaderIds) } })
       : [];
-    const uploaderMap = new Map(
-      uploaders.map((user) => [toApiId(user.id), user.username]),
-    );
+    const uploaderMap = new Map(uploaders.map((user) => [toApiId(user.id), user.username]));
 
     return {
       list: rows.map((row) => this.toListItem(row, uploaderMap)),
@@ -133,10 +116,7 @@ export class UploadService {
     return { success: true };
   }
 
-  private toListItem(
-    file: SysFileEntity,
-    uploaderMap: Map<string, string>,
-  ): FileListItem {
+  private toListItem(file: SysFileEntity, uploaderMap: Map<string, string>): FileListItem {
     const uploaderId = toApiId(file.uploaderId);
     return {
       id: toApiId(file.id),

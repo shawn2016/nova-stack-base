@@ -37,7 +37,7 @@
             </ElFormItem>
 
             <!-- 推拽验证 -->
-            <div class="relative pb-5 mt-6">
+            <div v-if="requireDragVerify" class="relative pb-5 mt-6">
               <div
                 class="relative z-[2] overflow-hidden select-none rounded-lg border border-transparent tad-300"
                 :class="{ '!border-[#FF4E4F]': !isPassing && isClickPass }"
@@ -65,9 +65,6 @@
               <ElCheckbox v-model="formData.rememberPassword">{{
                 $t('login.rememberPwd')
               }}</ElCheckbox>
-              <RouterLink class="text-theme" :to="{ name: 'ForgetPassword' }">{{
-                $t('login.forgetPwd')
-              }}</RouterLink>
             </div>
 
             <div style="margin-top: 30px">
@@ -80,13 +77,6 @@
               >
                 {{ $t('login.btnText') }}
               </ElButton>
-            </div>
-
-            <div class="mt-5 text-sm text-gray-600">
-              <span>{{ $t('login.noAccount') }}</span>
-              <RouterLink class="text-theme" :to="{ name: 'Register' }">{{
-                $t('login.register')
-              }}</RouterLink>
             </div>
           </ElForm>
         </div>
@@ -114,6 +104,8 @@
   })
 
   const dragVerify = ref()
+  // 本地开发免滑块，生产构建自动恢复验证。
+  const requireDragVerify = !import.meta.env.DEV
 
   const userStore = useUserStore()
   const router = useRouter()
@@ -144,7 +136,7 @@
       const valid = await formRef.value.validate()
       if (!valid) return
 
-      if (!isPassing.value) {
+      if (requireDragVerify && !isPassing.value) {
         isClickPass.value = true
         return
       }
@@ -169,7 +161,7 @@
 
   // 重置拖拽验证
   const resetDragVerify = () => {
-    dragVerify.value.reset()
+    dragVerify.value?.reset()
   }
 
   // 登录成功提示

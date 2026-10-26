@@ -33,9 +33,7 @@
           :prefix-icon="Search"
         />
 
-        <div class="menu-icon-picker-panel__meta">
-          共 {{ filteredIcons.length }} 个图标
-        </div>
+        <div class="menu-icon-picker-panel__meta"> 共 {{ filteredIcons.length }} 个图标 </div>
 
         <div class="menu-icon-picker-panel__grid">
           <button
@@ -71,10 +69,7 @@
 
 <script setup lang="ts">
   import { Search } from '@element-plus/icons-vue'
-  import {
-    MENU_ICON_CATALOG,
-    MENU_ICON_PAGE_SIZE,
-  } from '@/constants/menu-icons'
+  import { MENU_ICON_CATALOG, MENU_ICON_PAGE_SIZE } from '@/constants/menu-icons'
 
   defineOptions({ name: 'MenuIconPicker' })
 

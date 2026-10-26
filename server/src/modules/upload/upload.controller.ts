@@ -55,16 +55,11 @@ export class UploadController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
-        fileSize:
-          parseInt(process.env.UPLOAD_MAX_SIZE ?? '5242880', 10) ||
-          5 * 1024 * 1024,
+        fileSize: parseInt(process.env.UPLOAD_MAX_SIZE ?? '5242880', 10) || 5 * 1024 * 1024,
       },
     }),
   )
-  upload(
-    @UploadedFile() file: Express.Multer.File | undefined,
-    @CurrentUser() user: AuthUser,
-  ) {
+  upload(@UploadedFile() file: Express.Multer.File | undefined, @CurrentUser() user: AuthUser) {
     return this.uploadService.upload(file, user.userId);
   }
 

@@ -18,10 +18,10 @@
 
 | 依赖 | 版本要求 | 说明 |
 |------|----------|------|
-| Node.js | 20+ | 运行时 |
-| pnpm | 最新稳定版 | 包管理与 workspace |
+| Node.js | 24.x（.nvmrc 固定 24.14.0） | 运行时 |
+| pnpm | 9.15.0 | 包管理与 workspace |
 | MySQL | 8.x | 后端数据库 |
-| Redis | 7+ | JWT 黑名单与缓存 |
+| Redis | 7+ | 会话、限流、缓存和持久任务 |
 
 ## 快速开始
 
@@ -55,7 +55,7 @@ cp uni-app/.env.example uni-app/.env   # 如需 C 端
 - Admin 开发环境 `VITE_API_BASE_URL=/api`，Vite 仅代理 `/api` → `http://localhost:3001`
 - `CORS_ORIGINS` 需包含 Admin 开发地址（默认 `http://localhost:5173`）
 
-> 非 `production` 环境 TypeORM `synchronize=true` 会自动同步表结构；生产/staging 务必关闭（见 `server/.env.staging.example`）。
+> 默认关闭自动同步。新库先运行 `pnpm --filter @nova/server migration:run`；已有库按[数据库迁移说明](docs/operations/production-foundation-database.md)核验后建立基线。开发临时库才可显式开启 `DB_SYNCHRONIZE=true`，生产禁止。
 
 ### 4. 初始化数据
 
@@ -90,9 +90,14 @@ pnpm dev:all
 
 ```bash
 pnpm build          # 构建全部 workspace 包
-pnpm test           # shared-types 单测 + server 单测 + e2e
+pnpm test           # shared-types + server 单测/API e2e + 两端登录刷新测试
+pnpm test:clients   # Admin / uni-app 登录刷新回归测试
+pnpm typecheck      # 全工作区类型检查（含 Admin 与 uni-app）
 pnpm seed           # 初始化 RBAC 与示例数据
-pnpm lint           # ESLint（server + shared-types）
+pnpm lint           # ESLint（三端与共享类型，零 warning）
+pnpm format:check   # 只检查源码格式
+pnpm check          # lint + 格式 + 类型 + 测试 + 构建
+pnpm test:integration # 独立 MySQL/Redis 的真实依赖测试（需专用测试库）
 pnpm format         # Prettier 格式化
 
 pnpm --filter @nova/server test
@@ -118,3 +123,9 @@ pnpm --filter @nova/admin build
 ## Comet 工作流
 
 默认 Classic 工作流，入口 `/comet`。状态查询：`comet status`、`comet dashboard`。
+
+## 生产基座
+
+API 使用 `APP_ROLE=api`，独立任务进程使用 `APP_ROLE=worker pnpm --filter @nova/server worker`（先构建）。开发默认 `all`，生产拒绝 `all`。
+
+详见[运行与验收说明](docs/operations/production-foundation-runtime.md)、[任务 worker](docs/operations/job-worker.md)和[代码规范](docs/standards/foundation.md)。生产必须配置独立数据库、Redis 命名空间、强 JWT、明确 CORS 和对象存储。

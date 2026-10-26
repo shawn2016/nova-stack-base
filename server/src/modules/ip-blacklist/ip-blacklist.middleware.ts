@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NestMiddleware,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { NextFunction, Request, Response } from 'express';
 import { resolveClientIp } from '../../common/utils/resolve-client-ip';
@@ -16,8 +12,7 @@ export class IpBlacklistMiddleware implements NestMiddleware {
   ) {}
 
   async use(req: Request, _res: Response, next: NextFunction): Promise<void> {
-    const trustProxy =
-      this.configService.get<boolean>('ipBlacklist.trustProxy') ?? false;
+    const trustProxy = this.configService.get<boolean>('ipBlacklist.trustProxy') ?? false;
     const ip = resolveClientIp(req, trustProxy);
     const { blocked, reason } = await this.ipBlacklistService.isBlocked(ip);
 

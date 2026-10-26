@@ -2,6 +2,11 @@ import { DataSource } from 'typeorm';
 
 /** sqlite 兼容 DDL（实体使用 bigint，测试库用 INTEGER AUTOINCREMENT） */
 export async function initE2eSchema(dataSource: DataSource): Promise<void> {
+  await dataSource.query(`CREATE TABLE IF NOT EXISTS auth_session (
+    id VARCHAR(36) PRIMARY KEY, user_id BIGINT NOT NULL, type VARCHAR(16) NOT NULL,
+    username VARCHAR(64) NOT NULL DEFAULT '', ip VARCHAR(64) NOT NULL DEFAULT '', user_agent TEXT,
+    login_at DATETIME NOT NULL, expires_at DATETIME NOT NULL
+  )`);
   await dataSource.query(`
     CREATE TABLE IF NOT EXISTS sys_user (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

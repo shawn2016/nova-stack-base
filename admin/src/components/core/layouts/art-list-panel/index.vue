@@ -79,7 +79,7 @@
     /** 页面标题（无 Tab 时显示在左上角，样式同 Tab 栏） */
     title?: string
     /** 顶部分页签，不传则不渲染 Tab 区 */
-    tabs?: ArtListPanelTab[]
+    tabs?: readonly ArtListPanelTab[]
     loading?: boolean
     /** 无搜索 slot 时可关闭搜索折叠按钮 */
     showSearchToggle?: boolean

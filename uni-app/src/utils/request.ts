@@ -9,8 +9,7 @@ export interface RequestOptions extends Omit<UniApp.RequestOptions, 'url'> {
   _skipAuth?: boolean;
 }
 
-let isRefreshing = false;
-let refreshQueue: Array<(token: string) => void> = [];
+let refreshPromise: Promise<TokenPair> | null = null;
 
 function resolveUrl(url: string): string {
   if (/^https?:\/\//.test(url)) {
@@ -38,15 +37,6 @@ function redirectToLogin() {
   uni.reLaunch({ url: '/pages/login/login' });
 }
 
-function processRefreshQueue(token: string) {
-  refreshQueue.forEach((callback) => callback(token));
-  refreshQueue = [];
-}
-
-function rejectRefreshQueue() {
-  refreshQueue = [];
-}
-
 function buildHeaders(options: RequestOptions): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -68,6 +58,7 @@ async function refreshAccessToken(refreshToken: string): Promise<TokenPair> {
     uni.request({
       url: resolveUrl('/member/auth/refresh'),
       method: 'POST',
+      timeout: 15000,
       header: { 'Content-Type': 'application/json' },
       data: { refreshToken },
       success: (res) => {
@@ -87,6 +78,33 @@ async function refreshAccessToken(refreshToken: string): Promise<TokenPair> {
   });
 }
 
+/** 共享刷新结果，同时阻止退出或切换账号后的迟到响应恢复旧会话。 */
+function refreshSession(): Promise<TokenPair> {
+  if (!refreshPromise) {
+    const memberStore = useMemberStore();
+    const refreshToken = memberStore.refreshToken!;
+    refreshPromise = (async () => {
+      try {
+        const tokens = await refreshAccessToken(refreshToken);
+        if (memberStore.refreshToken !== refreshToken) {
+          throw new Error('登录状态已变化，请重试');
+        }
+        memberStore.setTokens(tokens.accessToken, tokens.refreshToken);
+        return tokens;
+      } catch (error) {
+        if (memberStore.refreshToken === refreshToken) {
+          memberStore.resetSession();
+          redirectToLogin();
+        }
+        throw error;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+  }
+  return refreshPromise;
+}
+
 async function handleUnauthorized<T>(options: RequestOptions): Promise<T> {
   if (!shouldAttemptRefresh(options.url) || options._retry) {
     throw new Error('未授权');
@@ -100,36 +118,15 @@ async function handleUnauthorized<T>(options: RequestOptions): Promise<T> {
     throw new Error('登录已过期，请重新登录');
   }
 
-  if (isRefreshing) {
-    return new Promise((resolve, reject) => {
-      refreshQueue.push((token: string) => {
-        request<T>({ ...options, _retry: true, header: { Authorization: `Bearer ${token}` } })
-          .then(resolve)
-          .catch(reject);
-      });
-    });
-  }
-
-  isRefreshing = true;
-
-  try {
-    const tokens = await refreshAccessToken(memberStore.refreshToken);
-    memberStore.updateAccessToken(tokens.accessToken);
-    processRefreshQueue(tokens.accessToken);
-    return request<T>({ ...options, _retry: true });
-  } catch {
-    rejectRefreshQueue();
-    memberStore.resetSession();
-    redirectToLogin();
-    throw new Error('登录已过期，请重新登录');
-  } finally {
-    isRefreshing = false;
-  }
+  await refreshSession();
+  // 原 header 原样保留，由 buildHeaders 注入刷新后的 Authorization。
+  return request<T>({ ...options, _retry: true });
 }
 
 export function request<T = unknown>(options: RequestOptions): Promise<T> {
   return new Promise((resolve, reject) => {
     uni.request({
+      timeout: 15000,
       ...options,
       url: resolveUrl(options.url),
       header: buildHeaders(options),

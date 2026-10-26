@@ -1,10 +1,6 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { JobDetail, JobListItem, PaginationResult } from '@nova/shared-types';
+import type { JobDetail, JobListItem, PaginationResult, RunJobResult } from '@nova/shared-types';
 import { Repository } from 'typeorm';
 import { SysJobEntity } from '../../database/entities';
 import { toApiId } from '../../common/utils/to-api-id';
@@ -71,7 +67,7 @@ export class JobService {
 
     const saved = await this.jobRepo.save(job);
     if (saved.status === 1) {
-      this.scheduler.schedule(saved);
+      await this.scheduler.schedule(saved);
     }
     return this.toListItem(saved);
   }
@@ -94,10 +90,7 @@ export class JobService {
     if (dto.status !== undefined) job.status = dto.status;
 
     const saved = await this.jobRepo.save(job);
-    this.scheduler.unschedule(saved.id);
-    if (saved.status === 1) {
-      this.scheduler.schedule(saved);
-    }
+    await this.scheduler.schedule(saved);
     return this.toListItem(saved);
   }
 
@@ -105,26 +98,18 @@ export class JobService {
     const job = await this.findEntityById(id);
     job.status = dto.status;
     const saved = await this.jobRepo.save(job);
-    this.scheduler.unschedule(saved.id);
-    if (saved.status === 1) {
-      this.scheduler.schedule(saved);
-    }
+    await this.scheduler.schedule(saved);
     return this.toListItem(saved);
   }
 
-  async runOnce(id: string) {
-    await this.findEntityById(id);
-    const result = await this.scheduler.runOnce(id);
-    if (!result) {
-      throw new BadRequestException('Job is already running');
-    }
-    return result;
+  async runOnce(id: string): Promise<RunJobResult> {
+    return this.scheduler.runOnce(id);
   }
 
   async remove(id: string): Promise<{ success: true }> {
     const job = await this.findEntityById(id);
-    this.scheduler.unschedule(job.id);
     await this.jobRepo.remove(job);
+    await this.scheduler.unschedule(job.id);
     return { success: true };
   }
 

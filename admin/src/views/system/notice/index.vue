@@ -51,11 +51,7 @@
   import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
   import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import {
-    deleteNotice,
-    fetchNoticeList,
-    publishNotice,
-  } from '@/api/notice'
+  import { deleteNotice, fetchNoticeList, publishNotice } from '@/api/notice'
   import type { NoticeListQuery } from '@/api/notice'
   import type { NoticeListItem } from '@nova/shared-types'
   import { ElMessageBox, ElTag } from 'element-plus'
@@ -71,7 +67,7 @@
   const searchForm = reactive<NoticeListQuery>({
     keyword: undefined,
     status: undefined,
-    type: undefined,
+    type: undefined
   })
 
   const searchItems = computed(() => [
@@ -79,7 +75,7 @@
       label: '关键词',
       key: 'keyword',
       type: 'input',
-      props: { clearable: true, placeholder: '标题' },
+      props: { clearable: true, placeholder: '标题' }
     },
     {
       label: '类型',
@@ -90,9 +86,9 @@
         placeholder: '请选择类型',
         options: [
           { label: '通知', value: 1 },
-          { label: '公告', value: 2 },
-        ],
-      },
+          { label: '公告', value: 2 }
+        ]
+      }
     },
     {
       label: '状态',
@@ -103,20 +99,20 @@
         placeholder: '请选择状态',
         options: [
           { label: '草稿', value: 0 },
-          { label: '已发布', value: 1 },
-        ],
-      },
-    },
+          { label: '已发布', value: 1 }
+        ]
+      }
+    }
   ])
 
   const statusTag: Record<0 | 1, { type: 'info' | 'success'; label: string }> = {
     0: { type: 'info', label: '草稿' },
-    1: { type: 'success', label: '已发布' },
+    1: { type: 'success', label: '已发布' }
   }
 
   const typeLabel: Record<1 | 2, string> = {
     1: '通知',
-    2: '公告',
+    2: '公告'
   }
 
   const {
@@ -128,7 +124,7 @@
     getData,
     replaceSearchParams,
     handleSizeChange,
-    handleCurrentChange,
+    handleCurrentChange
   } = useTable({
     core: {
       apiFn: fetchNoticeList,
@@ -139,7 +135,7 @@
           prop: 'type',
           label: '类型',
           width: 90,
-          formatter: (row: NoticeListItem) => typeLabel[row.type],
+          formatter: (row: NoticeListItem) => typeLabel[row.type]
         },
         {
           prop: 'status',
@@ -148,13 +144,13 @@
           formatter: (row: NoticeListItem) => {
             const tag = statusTag[row.status]
             return h(ElTag, { type: tag.type }, () => tag.label)
-          },
+          }
         },
         {
           prop: 'publishedAt',
           label: '发布时间',
           minWidth: 160,
-          formatter: (row: NoticeListItem) => row.publishedAt ?? '-',
+          formatter: (row: NoticeListItem) => row.publishedAt ?? '-'
         },
         {
           prop: 'operation',
@@ -166,8 +162,8 @@
                 key: 'edit',
                 label: '编辑',
                 auth: 'system:notice:update',
-                onClick: () => showDialog('edit', row),
-              },
+                onClick: () => showDialog('edit', row)
+              }
             ]
             if (row.status === 0) {
               items.push(
@@ -175,22 +171,22 @@
                   key: 'publish',
                   label: '发布',
                   auth: 'system:notice:publish',
-                  onClick: () => handlePublish(row),
+                  onClick: () => handlePublish(row)
                 },
                 {
                   key: 'delete',
                   label: '删除',
                   danger: true,
                   auth: 'system:notice:delete',
-                  onClick: () => handleDelete(row),
-                },
+                  onClick: () => handleDelete(row)
+                }
               )
             }
             return h(ArtTableActions, { items })
-          },
-        },
-      ],
-    },
+          }
+        }
+      ]
+    }
   })
 
   function refreshData() {
@@ -203,7 +199,7 @@
       status: searchForm.status,
       type: searchForm.type,
       current: 1,
-      size: pagination.size,
+      size: pagination.size
     })
     getData()
   }

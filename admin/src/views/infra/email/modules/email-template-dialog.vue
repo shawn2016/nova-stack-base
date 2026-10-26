@@ -61,7 +61,7 @@
 
   const dialogVisible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const form = reactive({
@@ -71,7 +71,7 @@
     channelId: '',
     subject: '',
     content: '',
-    enabled: true,
+    enabled: true
   })
 
   function initForm() {
@@ -83,7 +83,7 @@
         channelId: props.templateData.channelId,
         subject: props.templateData.subject,
         content: props.templateData.content,
-        enabled: props.templateData.status === 1,
+        enabled: props.templateData.status === 1
       })
       return
     }
@@ -94,7 +94,7 @@
       channelId: props.channels[0]?.id ?? '',
       subject: '欢迎加入 {siteName}',
       content: '您好，欢迎加入 {siteName}！',
-      enabled: true,
+      enabled: true
     })
   }
 
@@ -106,7 +106,7 @@
       channelId: '',
       subject: '',
       content: '',
-      enabled: true,
+      enabled: true
     })
   }
 
@@ -114,7 +114,7 @@
     () => [props.visible, props.dialogType, props.templateData, props.channels] as const,
     ([visible]) => {
       if (visible) initForm()
-    },
+    }
   )
 
   async function handleSubmit() {
@@ -126,7 +126,7 @@
         channelId: form.channelId,
         subject: form.subject,
         content: form.content,
-        status: (form.enabled ? 1 : 0) as 0 | 1,
+        status: (form.enabled ? 1 : 0) as 0 | 1
       }
       if (props.dialogType === 'add') {
         await createEmailTemplate(payload)

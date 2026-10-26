@@ -53,19 +53,19 @@
 
   const visible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const rules = reactive<FormRules>({
     receiverId: [{ required: true, message: '请选择收件人', trigger: 'change' }],
     title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
-    content: [{ required: true, message: '请输入内容', trigger: 'blur' }],
+    content: [{ required: true, message: '请输入内容', trigger: 'blur' }]
   })
 
   const form = reactive({
     receiverId: '',
     title: '',
-    content: '',
+    content: ''
   })
 
   watch(
@@ -77,9 +77,9 @@
       userOptions.value = res.records.map((u) => ({
         id: u.id,
         username: u.username,
-        nickname: u.nickname,
+        nickname: u.nickname
       }))
-    },
+    }
   )
 
   function handleClose() {

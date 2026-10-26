@@ -1,6 +1,13 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 
-export type JobHandlerFn = () => Promise<string>;
+/** Stable across retries; handlers must atomically deduplicate external effects. */
+export interface JobExecutionContext {
+  executionId: string;
+  attempt: number;
+  signal: AbortSignal;
+}
+
+export type JobHandlerFn = (context: JobExecutionContext) => Promise<string>;
 
 @Injectable()
 export class JobHandlerRegistry implements OnModuleInit {

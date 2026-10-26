@@ -64,7 +64,7 @@
     visible: false,
     dialogType: 'add',
     jobData: undefined,
-    handlers: () => [],
+    handlers: () => []
   })
 
   const emit = defineEmits<Emits>()
@@ -74,13 +74,13 @@
 
   const visible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const rules = reactive<FormRules>({
     name: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
     invokeTarget: [{ required: true, message: '请选择 Handler', trigger: 'change' }],
-    cronExpression: [{ required: true, message: '请输入 Cron 表达式', trigger: 'blur' }],
+    cronExpression: [{ required: true, message: '请输入 Cron 表达式', trigger: 'blur' }]
   })
 
   const form = reactive({
@@ -91,7 +91,7 @@
     cronExpression: '',
     concurrentEnabled: false,
     enabled: false,
-    remark: '',
+    remark: ''
   })
 
   function initForm() {
@@ -104,7 +104,7 @@
         cronExpression: props.jobData.cronExpression,
         concurrentEnabled: props.jobData.concurrent === 1,
         enabled: props.jobData.status === 1,
-        remark: props.jobData.remark ?? '',
+        remark: props.jobData.remark ?? ''
       })
     } else {
       Object.assign(form, {
@@ -115,7 +115,7 @@
         cronExpression: '0 */6 * * *',
         concurrentEnabled: false,
         enabled: false,
-        remark: '',
+        remark: ''
       })
     }
   }
@@ -124,7 +124,7 @@
     () => props.visible,
     (val) => {
       if (val) initForm()
-    },
+    }
   )
 
   const handleClose = () => {
@@ -144,7 +144,7 @@
         cronExpression: form.cronExpression,
         concurrent: (form.concurrentEnabled ? 1 : 0) as 0 | 1,
         status: (form.enabled ? 1 : 0) as 0 | 1,
-        remark: form.remark || null,
+        remark: form.remark || null
       }
       if (props.dialogType === 'add') {
         await createJob(payload)

@@ -29,7 +29,7 @@ export const MENU_ICON_PRESETS = [
   'ri:video-line',
   'ri:tools-line',
   'ri:database-line',
-  'ri:cloud-line',
+  'ri:cloud-line'
 ] as const
 
 function toKebabCase(name: string): string {
@@ -59,7 +59,7 @@ const ELEMENT_PLUS_ICON_IDS = buildElementPlusIconIds()
 
 /** 可选图标全集：常用 ri 优先，后接 Remix 全集与 Element Plus */
 export const MENU_ICON_CATALOG: string[] = [
-  ...new Set([...MENU_ICON_PRESETS, ...REMIX_ICON_IDS, ...ELEMENT_PLUS_ICON_IDS]),
+  ...new Set([...MENU_ICON_PRESETS, ...REMIX_ICON_IDS, ...ELEMENT_PLUS_ICON_IDS])
 ]
 
 /** 每页展示数量（8 列 × 6 行） */

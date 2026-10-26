@@ -57,13 +57,11 @@
   import RegionDialog from './modules/region-dialog.vue'
   import { deleteRegion, fetchRegionTree } from '@/api/region'
   import { ElTag, ElMessageBox } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
 
   defineOptions({ name: 'Regions' })
 
   type RegionTreeItem = RegionTreeNode & { children?: RegionTreeItem[] }
 
-  const userStore = useUserStore()
   const showSearchBar = ref(true)
   const loading = ref(false)
   const isExpanded = ref(false)
@@ -75,11 +73,11 @@
   const flatRegionList = ref<RegionListItem[]>([])
 
   const formFilters = reactive({
-    keyword: '',
+    keyword: ''
   })
 
   const appliedFilters = reactive({
-    keyword: '',
+    keyword: ''
   })
 
   const formItems = computed(() => [
@@ -87,14 +85,14 @@
       label: '名称/代码',
       key: 'keyword',
       type: 'input',
-      props: { clearable: true, placeholder: '搜索名称或区划代码' },
-    },
+      props: { clearable: true, placeholder: '搜索名称或区划代码' }
+    }
   ])
 
   const levelLabel: Record<1 | 2 | 3, string> = {
     1: '省级',
     2: '市级',
-    3: '区县级',
+    3: '区县级'
   }
 
   onMounted(() => {
@@ -131,9 +129,11 @@
       label: '层级',
       width: 100,
       formatter: (row: RegionTreeItem) =>
-        h(ElTag, { type: row.level === 1 ? 'primary' : row.level === 2 ? 'success' : 'info' }, () =>
-          levelLabel[row.level],
-        ),
+        h(
+          ElTag,
+          { type: row.level === 1 ? 'primary' : row.level === 2 ? 'success' : 'info' },
+          () => levelLabel[row.level]
+        )
     },
     { prop: 'sort', label: '排序', width: 80 },
     {
@@ -143,7 +143,7 @@
       formatter: (row: RegionTreeItem) => {
         const enabled = row.status === 1
         return h(ElTag, { type: enabled ? 'success' : 'info' }, () => (enabled ? '启用' : '禁用'))
-      },
+      }
     },
     {
       prop: 'operation',
@@ -156,7 +156,7 @@
             key: 'add',
             label: '新增子级',
             auth: 'system:region:create',
-            onClick: () => handleAddChild(row),
+            onClick: () => handleAddChild(row)
           })
         }
         items.push(
@@ -164,19 +164,19 @@
             key: 'edit',
             label: '编辑',
             auth: 'system:region:update',
-            onClick: () => handleEdit(row),
+            onClick: () => handleEdit(row)
           },
           {
             key: 'delete',
             label: '删除',
             danger: true,
             auth: 'system:region:delete',
-            onClick: () => handleDelete(row),
-          },
+            onClick: () => handleDelete(row)
+          }
         )
         return h(ArtTableActions, { items })
-      },
-    },
+      }
+    }
   ])
 
   function filterTree(nodes: RegionTreeItem[], keyword: string): RegionTreeItem[] {
@@ -186,12 +186,11 @@
     const result: RegionTreeItem[] = []
     for (const node of nodes) {
       const children = node.children ? filterTree(node.children, kw) : []
-      const matched =
-        node.name.toLowerCase().includes(kw) || node.code.toLowerCase().includes(kw)
+      const matched = node.name.toLowerCase().includes(kw) || node.code.toLowerCase().includes(kw)
       if (matched || children.length) {
         result.push({
           ...node,
-          ...(children.length ? { children } : {}),
+          ...(children.length ? { children } : {})
         })
       }
     }
@@ -231,7 +230,7 @@
       await ElMessageBox.confirm(`确定要删除地区「${row.name}」吗？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning',
+        type: 'warning'
       })
       await deleteRegion(row.id)
       ElMessage.success('删除成功')

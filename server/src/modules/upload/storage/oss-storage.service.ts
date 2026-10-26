@@ -26,6 +26,7 @@ export class OssStorageService {
       accessKeyId: config.accessKeyId,
       accessKeySecret: config.accessKeySecret,
       bucket: config.bucket,
+      timeout: 15000,
     });
     this.clientCache = { key: cacheKey, client };
     return client;

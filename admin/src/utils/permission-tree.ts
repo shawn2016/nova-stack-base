@@ -22,7 +22,7 @@ function buildMenuBranch(
   menus: SysMenuListItem[],
   permissions: SysPermissionOption[],
   usedCodes: Set<string>,
-  parentId = '0',
+  parentId = '0'
 ): PermissionTreeNode[] {
   return menus
     .filter((item) => item.parentId === parentId)
@@ -40,7 +40,7 @@ function buildMenuBranch(
               id: `perm:${permission.code}`,
               label: permission.name,
               nodeType: 'permission',
-              permissionCode: permission.code,
+              permissionCode: permission.code
             })
           }
         }
@@ -52,7 +52,7 @@ function buildMenuBranch(
         label: menu.name,
         nodeType: menu.type === 'directory' ? 'directory' : 'menu',
         disabled: true,
-        ...(children.length ? { children } : {}),
+        ...(children.length ? { children } : {})
       }
     })
 }
@@ -60,7 +60,7 @@ function buildMenuBranch(
 /** 按菜单树挂载权限；未匹配菜单的权限归入「其他权限」 */
 export function buildPermissionTree(
   menus: SysMenuListItem[],
-  permissions: SysPermissionOption[],
+  permissions: SysPermissionOption[]
 ): PermissionTreeNode[] {
   const usedCodes = new Set<string>()
   const tree = buildMenuBranch(menus, permissions, usedCodes)
@@ -71,7 +71,7 @@ export function buildPermissionTree(
       id: `perm:${item.code}`,
       label: item.name,
       nodeType: 'permission' as const,
-      permissionCode: item.code,
+      permissionCode: item.code
     }))
 
   if (orphanPermissions.length) {
@@ -80,7 +80,7 @@ export function buildPermissionTree(
       label: '其他权限',
       nodeType: 'directory',
       disabled: true,
-      children: orphanPermissions,
+      children: orphanPermissions
     })
   }
 
@@ -92,7 +92,5 @@ export function permissionCodesToTreeKeys(codes: string[]): string[] {
 }
 
 export function treeKeysToPermissionCodes(keys: string[]): string[] {
-  return keys
-    .filter((key) => key.startsWith('perm:'))
-    .map((key) => key.slice(5))
+  return keys.filter((key) => key.startsWith('perm:')).map((key) => key.slice(5))
 }

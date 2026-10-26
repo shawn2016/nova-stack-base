@@ -18,11 +18,7 @@
         />
       </template>
       <template #head-actions>
-        <ElButton
-          v-permission="'system:file:settings'"
-          @click="openSettings"
-          v-ripple
-        >
+        <ElButton v-permission="'system:file:settings'" @click="openSettings" v-ripple>
           存储配置
         </ElButton>
         <ElUpload
@@ -90,11 +86,12 @@
 </template>
 
 <script setup lang="ts">
+  import { UploadAjaxError } from 'element-plus/es/components/upload/src/ajax'
   import {
     FILE_STORAGE_LABELS,
     UPLOAD_STORAGE_PROVIDER_LABELS,
     type FileListItem,
-    type FileStorageType,
+    type FileStorageType
   } from '@nova/shared-types'
   import type { UploadRequestOptions } from 'element-plus'
   import { deleteFile, fetchFileList } from '@/api/file'
@@ -114,12 +111,12 @@
 
   const searchForm = reactive<{ keyword: string; storage?: FileStorageType }>({
     keyword: '',
-    storage: undefined,
+    storage: undefined
   })
 
   const appliedFilters = reactive<{ keyword: string; storage?: FileStorageType }>({
     keyword: '',
-    storage: undefined,
+    storage: undefined
   })
 
   function openSettings() {
@@ -131,7 +128,7 @@
       label: '关键词',
       key: 'keyword',
       type: 'input',
-      props: { clearable: true, placeholder: '文件名 / URL' },
+      props: { clearable: true, placeholder: '文件名 / URL' }
     },
     {
       label: '存储',
@@ -144,10 +141,10 @@
           { label: UPLOAD_STORAGE_PROVIDER_LABELS.local, value: 'local' },
           { label: UPLOAD_STORAGE_PROVIDER_LABELS.aliyun_oss, value: 'aliyun_oss' },
           { label: UPLOAD_STORAGE_PROVIDER_LABELS.tencent_cos, value: 'tencent_cos' },
-          { label: '阿里云 OSS（历史）', value: 'oss' },
-        ],
-      },
-    },
+          { label: '阿里云 OSS（历史）', value: 'oss' }
+        ]
+      }
+    }
   ])
 
   function storageTagType(storage: FileStorageType): 'info' | 'success' | 'warning' {
@@ -173,7 +170,7 @@
         current: pagination.current,
         size: pagination.size,
         keyword: appliedFilters.keyword,
-        storage: appliedFilters.storage,
+        storage: appliedFilters.storage
       })
       files.value = result.records
       total.value = result.total
@@ -211,7 +208,14 @@
     } catch (error) {
       const message = error instanceof Error ? error.message : '上传失败'
       ElMessage.error(message)
-      options.onError?.(error as Error)
+      options.onError?.(
+        new UploadAjaxError(
+          error instanceof Error ? error.message : '上传失败',
+          0,
+          'POST',
+          '/api/upload'
+        )
+      )
     } finally {
       uploading.value = false
     }
@@ -230,7 +234,7 @@
     ElMessageBox.confirm('确定删除该文件吗？删除后链接将失效。', '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
+      type: 'warning'
     })
       .then(async () => {
         await deleteFile(item.id)

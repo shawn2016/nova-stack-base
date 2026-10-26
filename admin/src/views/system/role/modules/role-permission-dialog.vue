@@ -1,11 +1,5 @@
 <template>
-  <ElDialog
-    v-model="visible"
-    title="分配权限"
-    width="680px"
-    align-center
-    @close="handleClose"
-  >
+  <ElDialog v-model="visible" title="分配权限" width="680px" align-center @close="handleClose">
     <ElAlert
       type="info"
       :closable="false"
@@ -59,7 +53,7 @@
               placeholder="请选择部门"
               style="width: 100%"
               node-key="id"
-              :props="{ label: 'label', value: 'id', children: 'children' }"
+              :props="{ label: 'label', children: 'children' }"
             />
           </ElFormItem>
         </ElForm>
@@ -80,20 +74,20 @@
     DATA_SCOPE_ALL,
     DATA_SCOPE_CUSTOM,
     DATA_SCOPE_LABELS,
-    type DataScope,
+    type DataScope
   } from '@nova/shared-types'
   import {
     assignRolePermissions,
     fetchMenuList,
     fetchPermissionOptions,
     fetchRoleDetail,
-    updateRole,
+    updateRole
   } from '@/api/system-manage'
   import { fetchDeptTreeAll } from '@/api/dept'
   import {
     buildPermissionTree,
     permissionCodesToTreeKeys,
-    type PermissionTreeNode,
+    type PermissionTreeNode
   } from '@/utils/permission-tree'
 
   interface Props {
@@ -108,7 +102,7 @@
 
   const props = withDefaults(defineProps<Props>(), {
     visible: false,
-    roleData: undefined,
+    roleData: undefined
   })
 
   const emit = defineEmits<Emits>()
@@ -117,13 +111,18 @@
   const loading = ref(false)
   const submitting = ref(false)
   const permissionTree = ref<PermissionTreeNode[]>([])
-  const deptOptions = ref<{ id: string; label: string; children?: typeof deptOptions.value }[]>([])
+  interface DeptOption {
+    id: string
+    label: string
+    children?: DeptOption[]
+  }
+  const deptOptions = ref<DeptOption[]>([])
   const dataScope = ref<DataScope>(DATA_SCOPE_ALL)
   const customDeptIds = ref<string[]>([])
 
   const visible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const isSuperAdmin = computed(() => props.roleData?.code === 'super_admin')
@@ -132,15 +131,12 @@
     return nodes.map((node) => ({
       id: node.id,
       label: node.name,
-      ...(node.children?.length ? { children: mapDeptTree(node.children) } : {}),
+      ...(node.children?.length ? { children: mapDeptTree(node.children) } : {})
     }))
   }
 
   async function loadPermissionTree() {
-    const [menus, permissions] = await Promise.all([
-      fetchMenuList(),
-      fetchPermissionOptions(),
-    ])
+    const [menus, permissions] = await Promise.all([fetchMenuList(), fetchPermissionOptions()])
     permissionTree.value = buildPermissionTree(menus, permissions)
   }
 
@@ -154,7 +150,7 @@
         loadPermissionTree(),
         fetchDeptTreeAll().then((tree) => {
           deptOptions.value = mapDeptTree(tree)
-        }),
+        })
       ])
 
       dataScope.value = detail.dataScope ?? DATA_SCOPE_ALL
@@ -175,7 +171,7 @@
       if (newVal && props.roleData) {
         void loadRolePermissions()
       }
-    },
+    }
   )
 
   watch(dataScope, (scope) => {
@@ -207,8 +203,7 @@
       if (!isSuperAdmin.value) {
         await updateRole(props.roleData.id, {
           dataScope: dataScope.value,
-          customDeptIds:
-            dataScope.value === DATA_SCOPE_CUSTOM ? customDeptIds.value : [],
+          customDeptIds: dataScope.value === DATA_SCOPE_CUSTOM ? customDeptIds.value : []
         })
       }
 

@@ -19,7 +19,12 @@
         />
       </template>
       <template #head-actions>
-        <ElButton v-permission="'system:menu:create'" type="primary" @click="handleAddMenu" v-ripple>
+        <ElButton
+          v-permission="'system:menu:create'"
+          type="primary"
+          @click="handleAddMenu"
+          v-ripple
+        >
           添加菜单
         </ElButton>
         <ElButton @click="toggleExpand" v-ripple>
@@ -58,13 +63,11 @@
   import { deleteMenu, fetchMenuList } from '@/api/system-manage'
   import { refreshAppMenus } from '@/utils/menuRefresh'
   import { ElTag, ElMessageBox } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
 
   defineOptions({ name: 'Menus' })
 
   type MenuTreeItem = SysMenuListItem & { children?: MenuTreeItem[] }
 
-  const userStore = useUserStore()
   const showSearchBar = ref(true)
   const loading = ref(false)
   const isExpanded = ref(false)
@@ -75,12 +78,12 @@
 
   const formFilters = reactive({
     name: '',
-    path: '',
+    path: ''
   })
 
   const appliedFilters = reactive({
     name: '',
-    path: '',
+    path: ''
   })
 
   const formItems = computed(() => [
@@ -88,14 +91,14 @@
       label: '菜单名称',
       key: 'name',
       type: 'input',
-      props: { clearable: true },
+      props: { clearable: true }
     },
     {
       label: '路由地址',
       key: 'path',
       type: 'input',
-      props: { clearable: true },
-    },
+      props: { clearable: true }
+    }
   ])
 
   onMounted(() => {
@@ -126,7 +129,7 @@
   const menuTypeLabel: Record<SysMenuListItem['type'], string> = {
     directory: '目录',
     menu: '菜单',
-    button: '按钮',
+    button: '按钮'
   }
 
   const menuTypeTag: Record<
@@ -135,7 +138,7 @@
   > = {
     directory: 'info',
     menu: 'primary',
-    button: 'danger',
+    button: 'danger'
   }
 
   const { columnChecks, columns } = useTableColumns(() => [
@@ -147,14 +150,14 @@
       formatter: (row: MenuTreeItem) =>
         row.icon
           ? h('div', { class: 'flex-cc' }, [h(ArtSvgIcon, { icon: row.icon, class: 'text-lg' })])
-          : h('span', { class: 'text-g-400' }, '-'),
+          : h('span', { class: 'text-g-400' }, '-')
     },
     {
       prop: 'type',
       label: '类型',
       width: 100,
       formatter: (row: MenuTreeItem) =>
-        h(ElTag, { type: menuTypeTag[row.type] }, () => menuTypeLabel[row.type]),
+        h(ElTag, { type: menuTypeTag[row.type] }, () => menuTypeLabel[row.type])
     },
     { prop: 'path', label: '路由', minWidth: 160 },
     { prop: 'component', label: '组件', minWidth: 180, showOverflowTooltip: true },
@@ -167,7 +170,7 @@
       formatter: (row: MenuTreeItem) => {
         const enabled = row.status === 1
         return h(ElTag, { type: enabled ? 'success' : 'info' }, () => (enabled ? '启用' : '禁用'))
-      },
+      }
     },
     {
       prop: 'operation',
@@ -180,18 +183,18 @@
               key: 'edit',
               label: '编辑',
               auth: 'system:menu:update',
-              onClick: () => handleEditMenu(row),
+              onClick: () => handleEditMenu(row)
             },
             {
               key: 'delete',
               label: '删除',
               danger: true,
               auth: 'system:menu:delete',
-              onClick: () => handleDeleteMenu(row),
-            },
-          ] satisfies TableActionItem[],
-        }),
-    },
+              onClick: () => handleDeleteMenu(row)
+            }
+          ] satisfies TableActionItem[]
+        })
+    }
   ])
 
   const filteredTableData = computed(() => {
@@ -259,7 +262,7 @@
       await ElMessageBox.confirm(`确定要删除菜单「${row.name}」吗？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning',
+        type: 'warning'
       })
       await deleteMenu(row.id)
       ElMessage.success('删除成功')

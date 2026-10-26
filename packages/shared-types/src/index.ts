@@ -47,12 +47,7 @@ export type {
   UploadResult,
 } from './auth.js';
 
-export type {
-  Article,
-  ArticleListItem,
-  CreateArticleDto,
-  UpdateArticleDto,
-} from './article.js';
+export type { Article, ArticleListItem, CreateArticleDto, UpdateArticleDto } from './article.js';
 
 export type {
   AssignRolePermissionsDto,
@@ -95,12 +90,7 @@ export type {
   OperLogListQuery,
 } from './audit-log.js';
 
-export type {
-  CreateRegionDto,
-  RegionListItem,
-  RegionTreeNode,
-  UpdateRegionDto,
-} from './region.js';
+export type { CreateRegionDto, RegionListItem, RegionTreeNode, UpdateRegionDto } from './region.js';
 
 export type {
   CreateMessageDto,
@@ -122,10 +112,7 @@ export type {
   UpdateDeptStatusDto,
 } from './dept.js';
 
-export type {
-  DataScope,
-  DataScopeFilter,
-} from './data-scope.js';
+export type { DataScope, DataScopeFilter } from './data-scope.js';
 
 export {
   DATA_SCOPE_ALL,

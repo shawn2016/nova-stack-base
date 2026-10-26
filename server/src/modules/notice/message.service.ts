@@ -1,14 +1,6 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type {
-  MessageListItem,
-  PaginationResult,
-  UnreadCountResult,
-} from '@nova/shared-types';
+import type { MessageListItem, PaginationResult, UnreadCountResult } from '@nova/shared-types';
 import { Repository } from 'typeorm';
 import { SysMessageEntity, SysUserEntity } from '../../database/entities';
 import { toApiId } from '../../common/utils/to-api-id';
@@ -23,17 +15,11 @@ export class MessageService {
     private readonly userRepo: Repository<SysUserEntity>,
   ) {}
 
-  async inbox(
-    userId: string,
-    query: ListMessagesDto,
-  ): Promise<PaginationResult<MessageListItem>> {
+  async inbox(userId: string, query: ListMessagesDto): Promise<PaginationResult<MessageListItem>> {
     return this.listForUser(userId, 'receiver', query);
   }
 
-  async sent(
-    userId: string,
-    query: ListMessagesDto,
-  ): Promise<PaginationResult<MessageListItem>> {
+  async sent(userId: string, query: ListMessagesDto): Promise<PaginationResult<MessageListItem>> {
     return this.listForUser(userId, 'sender', query);
   }
 

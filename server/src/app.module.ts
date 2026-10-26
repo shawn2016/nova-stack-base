@@ -36,6 +36,7 @@ import { IpBlacklistModule } from './modules/ip-blacklist/ip-blacklist.module';
 import { JobModule } from './modules/job/job.module';
 import { SmsModule } from './modules/sms/sms.module';
 import { EmailModule } from './modules/email/email.module';
+import { RuntimeModule } from './runtime/runtime.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { EmailModule } from './modules/email/email.module';
     DatabaseModule.forRoot(),
     RedisModule,
     JwtModule,
+    RuntimeModule,
     HealthModule,
     IpBlacklistModule,
     AuthModule,

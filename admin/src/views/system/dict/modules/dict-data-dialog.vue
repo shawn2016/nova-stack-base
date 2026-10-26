@@ -56,7 +56,7 @@
     dialogType: 'add',
     typeId: '',
     typeName: '',
-    dataItem: undefined,
+    dataItem: undefined
   })
 
   const emit = defineEmits<Emits>()
@@ -66,18 +66,18 @@
 
   const visible = computed({
     get: () => props.visible,
-    set: (value) => emit('update:visible', value),
+    set: (value) => emit('update:visible', value)
   })
 
   const rules = reactive<FormRules>({
     label: [
       { required: true, message: '请输入显示标签', trigger: 'blur' },
-      { max: 64, message: '最多 64 个字符', trigger: 'blur' },
+      { max: 64, message: '最多 64 个字符', trigger: 'blur' }
     ],
     value: [
       { required: true, message: '请输入存储值', trigger: 'blur' },
-      { max: 64, message: '最多 64 个字符', trigger: 'blur' },
-    ],
+      { max: 64, message: '最多 64 个字符', trigger: 'blur' }
+    ]
   })
 
   const form = reactive({
@@ -86,7 +86,7 @@
     value: '',
     sort: 0,
     enabled: true,
-    remark: '',
+    remark: ''
   })
 
   const initForm = () => {
@@ -97,7 +97,7 @@
         value: props.dataItem.value,
         sort: props.dataItem.sort,
         enabled: props.dataItem.status === 1,
-        remark: props.dataItem.remark ?? '',
+        remark: props.dataItem.remark ?? ''
       })
     } else {
       Object.assign(form, {
@@ -106,7 +106,7 @@
         value: '',
         sort: 0,
         enabled: true,
-        remark: '',
+        remark: ''
       })
     }
   }
@@ -115,7 +115,7 @@
     () => props.visible,
     (newVal) => {
       if (newVal) initForm()
-    },
+    }
   )
 
   watch(
@@ -123,7 +123,7 @@
     () => {
       if (props.visible) initForm()
     },
-    { deep: true },
+    { deep: true }
   )
 
   const handleClose = () => {
@@ -148,7 +148,7 @@
           value: form.value,
           sort: form.sort,
           status,
-          remark,
+          remark
         })
         ElMessage.success('新增成功')
       } else {
@@ -157,7 +157,7 @@
           value: form.value,
           sort: form.sort,
           status,
-          remark,
+          remark
         })
         ElMessage.success('修改成功')
       }

@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type {
   PaginationResult,
@@ -22,19 +18,14 @@ export class SiteConfigService {
     private readonly configRepo: Repository<SysConfigEntity>,
   ) {}
 
-  async list(
-    query: ListSiteConfigDto,
-  ): Promise<PaginationResult<SiteConfigListItem>> {
+  async list(query: ListSiteConfigDto): Promise<PaginationResult<SiteConfigListItem>> {
     const { page, pageSize, keyword, group } = query;
-    const qb = this.configRepo
-      .createQueryBuilder('config')
-      .orderBy('config.createdAt', 'DESC');
+    const qb = this.configRepo.createQueryBuilder('config').orderBy('config.createdAt', 'DESC');
 
     if (keyword) {
-      qb.andWhere(
-        '(config.configKey LIKE :keyword OR config.configName LIKE :keyword)',
-        { keyword: `%${keyword}%` },
-      );
+      qb.andWhere('(config.configKey LIKE :keyword OR config.configName LIKE :keyword)', {
+        keyword: `%${keyword}%`,
+      });
     }
 
     if (group) {
@@ -73,10 +64,7 @@ export class SiteConfigService {
     return this.toListItem(saved);
   }
 
-  async update(
-    id: string,
-    dto: UpdateSiteConfigDto,
-  ): Promise<SiteConfigListItem> {
+  async update(id: string, dto: UpdateSiteConfigDto): Promise<SiteConfigListItem> {
     const entity = await this.findEntityById(id);
 
     if (dto.configName !== undefined) entity.configName = dto.configName;

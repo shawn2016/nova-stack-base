@@ -21,10 +21,7 @@ export function parseSmsConfig(config: string): Record<string, unknown> {
   }
 }
 
-export function renderSmsTemplate(
-  content: string,
-  params: Record<string, string>,
-): string {
+export function renderSmsTemplate(content: string, params: Record<string, string>): string {
   return content.replace(/\{(\w+)\}/g, (_, key: string) => {
     if (!(key in params)) {
       throw new BadRequestException(`Missing template param: ${key}`);

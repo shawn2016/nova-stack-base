@@ -73,14 +73,14 @@
   import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
   import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
-  import type { DeptListItem, DeptTreeNode } from '@nova/shared-types'
+  import type { DeptTreeNode } from '@nova/shared-types'
   import DeptDialog from './modules/dept-dialog.vue'
   import {
     deleteDept,
     fetchDeptSettings,
     fetchDeptTreeAll,
     updateDeptSettings,
-    updateDeptStatus,
+    updateDeptStatus
   } from '@/api/dept'
   import { ElMessageBox, ElSwitch, ElTag } from 'element-plus'
   import { useUserStore } from '@/store/modules/user'
@@ -97,13 +97,13 @@
   const dialogVisible = ref(false)
   const settingsVisible = ref(false)
   const settingsSaving = ref(false)
-  const editData = ref<DeptListItem | null>(null)
+  const editData = ref<DeptTreeNode | null>(null)
   const defaultParentId = ref('0')
   const treeData = ref<DeptTreeItem[]>([])
-  const flatDeptList = ref<DeptListItem[]>([])
+  const flatDeptList = ref<DeptTreeNode[]>([])
   const settingsForm = reactive({
     moduleEnabled: true,
-    userBindingEnabled: true,
+    userBindingEnabled: true
   })
 
   const formFilters = reactive({ keyword: '' })
@@ -114,8 +114,8 @@
       label: '部门名称',
       key: 'keyword',
       type: 'input',
-      props: { clearable: true, placeholder: '搜索部门名称' },
-    },
+      props: { clearable: true, placeholder: '搜索部门名称' }
+    }
   ])
 
   onMounted(() => {
@@ -123,7 +123,7 @@
     loadSettings()
   })
 
-  function flattenTree(nodes: DeptTreeNode[], result: DeptListItem[] = []): DeptListItem[] {
+  function flattenTree(nodes: DeptTreeNode[], result: DeptTreeNode[] = []): DeptTreeNode[] {
     for (const { children, ...item } of nodes) {
       result.push(item)
       if (children?.length) flattenTree(children, result)
@@ -165,7 +165,12 @@
 
   const { columnChecks, columns } = useTableColumns(() => [
     { prop: 'name', label: '部门名称', minWidth: 180 },
-    { prop: 'leader', label: '负责人', width: 120, formatter: (row: DeptTreeItem) => row.leader || '-' },
+    {
+      prop: 'leader',
+      label: '负责人',
+      width: 120,
+      formatter: (row: DeptTreeItem) => row.leader || '-'
+    },
     { prop: 'sort', label: '排序', width: 80 },
     {
       prop: 'status',
@@ -175,14 +180,13 @@
         if (userStore.hasPermission('system:dept:update')) {
           return h(ElSwitch, {
             modelValue: row.status === 1,
-            onChange: (value: string | number | boolean) =>
-              handleStatusChange(row, value ? 1 : 0),
+            onChange: (value: string | number | boolean) => handleStatusChange(row, value ? 1 : 0)
           })
         }
         return h(ElTag, { type: row.status === 1 ? 'success' : 'info' }, () =>
-          row.status === 1 ? '启用' : '停用',
+          row.status === 1 ? '启用' : '停用'
         )
-      },
+      }
     },
     {
       prop: 'operation',
@@ -194,25 +198,25 @@
             key: 'add',
             label: '新增子级',
             auth: 'system:dept:create',
-            onClick: () => handleAddChild(row),
+            onClick: () => handleAddChild(row)
           },
           {
             key: 'edit',
             label: '编辑',
             auth: 'system:dept:update',
-            onClick: () => handleEdit(row),
+            onClick: () => handleEdit(row)
           },
           {
             key: 'delete',
             label: '删除',
             danger: true,
             auth: 'system:dept:delete',
-            onClick: () => handleDelete(row),
-          },
+            onClick: () => handleDelete(row)
+          }
         ]
         return h(ArtTableActions, { items })
-      },
-    },
+      }
+    }
   ])
 
   function filterTree(nodes: DeptTreeItem[], keyword: string): DeptTreeItem[] {
@@ -246,23 +250,23 @@
     dialogVisible.value = true
   }
 
-  function handleAddChild(row: DeptListItem) {
+  function handleAddChild(row: DeptTreeNode) {
     editData.value = null
     defaultParentId.value = row.id
     dialogVisible.value = true
   }
 
-  function handleEdit(row: DeptListItem) {
+  function handleEdit(row: DeptTreeNode) {
     editData.value = { ...row }
     dialogVisible.value = true
   }
 
-  async function handleDelete(row: DeptListItem) {
+  async function handleDelete(row: DeptTreeNode) {
     try {
       await ElMessageBox.confirm(`确定要删除部门「${row.name}」吗？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning',
+        type: 'warning'
       })
       await deleteDept(row.id)
       ElMessage.success('删除成功')

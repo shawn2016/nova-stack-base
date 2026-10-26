@@ -182,11 +182,11 @@ export class MenuProcessor {
   private isNavigableRoute(route: AppRouteRecord): boolean {
     return Boolean(
       route.path &&
-        route.path !== '/' &&
-        !route.meta?.link &&
-        route.meta?.isIframe !== true &&
-        route.component &&
-        route.component !== ''
+      route.path !== '/' &&
+      !route.meta?.link &&
+      route.meta?.isIframe !== true &&
+      route.component &&
+      route.component !== ''
     )
   }
 

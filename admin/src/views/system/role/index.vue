@@ -62,7 +62,7 @@
   defineOptions({ name: 'Role' })
 
   const searchForm = ref<RoleListQuery>({
-    keyword: undefined,
+    keyword: undefined
   })
 
   const showSearchBar = ref(true)
@@ -82,13 +82,13 @@
     resetSearchParams,
     handleSizeChange,
     handleCurrentChange,
-    refreshData,
+    refreshData
   } = useTable({
     core: {
       apiFn: fetchRoleList,
       apiParams: {
         current: 1,
-        size: 20,
+        size: 20
       },
       columnsFactory: () => [
         { prop: 'id', label: 'ID', width: 80 },
@@ -98,8 +98,7 @@
           prop: 'dataScope',
           label: '数据范围',
           minWidth: 120,
-          formatter: (row) =>
-            DATA_SCOPE_LABELS[(row.dataScope ?? 1) as DataScope] ?? '-',
+          formatter: (row) => DATA_SCOPE_LABELS[(row.dataScope ?? 1) as DataScope] ?? '-'
         },
         { prop: 'sort', label: '排序', width: 80 },
         {
@@ -108,12 +107,10 @@
           width: 100,
           formatter: (row) => {
             const enabled = row.status === 1
-            return h(
-              ElTag,
-              { type: enabled ? 'success' : 'warning' },
-              () => (enabled ? '启用' : '禁用'),
+            return h(ElTag, { type: enabled ? 'success' : 'warning' }, () =>
+              enabled ? '启用' : '禁用'
             )
-          },
+          }
         },
         {
           prop: 'operation',
@@ -126,14 +123,14 @@
                 key: 'permission',
                 label: '分配权限',
                 auth: 'system:role:update',
-                onClick: () => buttonMoreClick({ key: 'permission' }, row),
+                onClick: () => buttonMoreClick({ key: 'permission' }, row)
               },
               {
                 key: 'edit',
                 label: '编辑',
                 auth: 'system:role:update',
-                onClick: () => buttonMoreClick({ key: 'edit' }, row),
-              },
+                onClick: () => buttonMoreClick({ key: 'edit' }, row)
+              }
             ]
             if (row.code !== 'super_admin') {
               items.push({
@@ -141,14 +138,14 @@
                 label: '删除',
                 danger: true,
                 auth: 'system:role:delete',
-                onClick: () => buttonMoreClick({ key: 'delete' }, row),
+                onClick: () => buttonMoreClick({ key: 'delete' }, row)
               })
             }
             return h(ArtTableActions, { items })
-          },
-        },
-      ],
-    },
+          }
+        }
+      ]
+    }
   })
 
   const showDialog = (type: 'add' | 'edit', row?: SysRoleListItem) => {
@@ -185,7 +182,7 @@
     ElMessageBox.confirm(`确定删除角色「${row.name}」吗？此操作不可恢复！`, '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
+      type: 'warning'
     })
       .then(async () => {
         await deleteRoleApi(row.id)

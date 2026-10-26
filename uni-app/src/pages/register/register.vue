@@ -16,11 +16,7 @@
           password
           border="surround"
         />
-        <u-input
-          v-model="form.nickname"
-          placeholder="昵称（可选）"
-          border="surround"
-        />
+        <u-input v-model="form.nickname" placeholder="昵称（可选）" border="surround" />
         <u-button type="primary" text="注册" :loading="loading" @click="handleRegister" />
         <view class="link-row">
           <text class="link" @click="goLogin">已有账号？去登录</text>
@@ -56,11 +52,7 @@ async function handleRegister() {
 
   loading.value = true;
   try {
-    await memberStore.register(
-      form.phone,
-      form.password,
-      form.nickname.trim() || undefined,
-    );
+    await memberStore.register(form.phone, form.password, form.nickname.trim() || undefined);
     uni.showToast({ title: '注册成功', icon: 'success' });
     uni.reLaunch({ url: '/pages/index/index' });
   } catch (error) {

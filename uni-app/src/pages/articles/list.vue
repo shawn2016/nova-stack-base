@@ -5,18 +5,8 @@
     </view>
     <u-empty v-else-if="list.length === 0" mode="list" text="暂无文章" />
     <view v-else class="list">
-      <view
-        v-for="item in list"
-        :key="item.id"
-        class="article-card"
-        @click="goDetail(item.id)"
-      >
-        <image
-          v-if="item.coverUrl"
-          class="cover"
-          :src="item.coverUrl"
-          mode="aspectFill"
-        />
+      <view v-for="item in list" :key="item.id" class="article-card" @click="goDetail(item.id)">
+        <image v-if="item.coverUrl" class="cover" :src="item.coverUrl" mode="aspectFill" />
         <view class="info">
           <text class="title">{{ item.title }}</text>
           <text v-if="item.summary" class="summary">{{ item.summary }}</text>
@@ -130,7 +120,7 @@ async function refreshList() {
   }
 }
 
-function goDetail(id: number) {
+function goDetail(id: string) {
   uni.navigateTo({ url: `/pages/articles/detail?id=${id}` });
 }
 

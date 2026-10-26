@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
-  import type { RegionListItem, RegionTreeNode } from '@nova/shared-types'
+  import type { RegionListItem } from '@nova/shared-types'
   import { createRegion, updateRegion } from '@/api/region'
 
   interface Props {
@@ -69,7 +69,7 @@
     visible: false,
     editData: null,
     parentId: '0',
-    regionOptions: () => [],
+    regionOptions: () => []
   })
 
   const emit = defineEmits<Emits>()
@@ -85,14 +85,14 @@
     code: '',
     level: 1 as 1 | 2 | 3,
     sort: 0,
-    status: 1 as 0 | 1,
+    status: 1 as 0 | 1
   })
 
   const rules: FormRules = {
     parentId: [{ required: true, message: '请选择上级地区', trigger: 'change' }],
     name: [{ required: true, message: '请输入地区名称', trigger: 'blur' }],
     code: [{ required: true, message: '请输入区划代码', trigger: 'blur' }],
-    level: [{ required: true, message: '请选择层级', trigger: 'change' }],
+    level: [{ required: true, message: '请选择层级', trigger: 'change' }]
   }
 
   const dialogTitle = computed(() => (isEdit.value ? '编辑地区' : '新增地区'))
@@ -102,8 +102,8 @@
       .filter((item) => item.level < 3)
       .map((item) => ({
         id: item.id,
-        label: `${'　'.repeat(item.level - 1)}${item.name} (${item.code})`,
-      })),
+        label: `${'　'.repeat(item.level - 1)}${item.name} (${item.code})`
+      }))
   )
 
   watch(
@@ -119,7 +119,7 @@
           code: props.editData.code,
           level: props.editData.level,
           sort: props.editData.sort,
-          status: props.editData.status,
+          status: props.editData.status
         })
       } else {
         isEdit.value = false
@@ -131,11 +131,11 @@
           code: '',
           level: parent ? ((parent.level + 1) as 1 | 2 | 3) : 1,
           sort: 0,
-          status: 1,
+          status: 1
         })
       }
       nextTick(() => formRef.value?.clearValidate())
-    },
+    }
   )
 
   function handleCancel() {
@@ -155,7 +155,7 @@
           parentId: form.parentId,
           name: form.name,
           sort: form.sort,
-          status: form.status,
+          status: form.status
         })
         ElMessage.success('更新成功')
       } else {
@@ -165,7 +165,7 @@
           code: form.code,
           level: form.level,
           sort: form.sort,
-          status: form.status,
+          status: form.status
         })
         ElMessage.success('创建成功')
       }

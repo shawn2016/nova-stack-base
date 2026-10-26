@@ -1,7 +1,7 @@
 import type {
   CreateIpBlacklistDto,
   IpBlacklistListResult,
-  UpdateIpBlacklistStatusDto,
+  UpdateIpBlacklistStatusDto
 } from '@nova/shared-types'
 import { request } from './request'
 
@@ -20,7 +20,7 @@ function buildListParams(params: IpBlacklistListQuery = {}) {
     pageSize: size,
     ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
     ...(source ? { source } : {}),
-    ...(status !== undefined ? { status } : {}),
+    ...(status !== undefined ? { status } : {})
   }
 }
 
@@ -28,7 +28,7 @@ export function fetchIpBlacklistList(params: IpBlacklistListQuery = {}) {
   return request<IpBlacklistListResult>({
     url: '/security/ip-blacklist',
     method: 'GET',
-    params: buildListParams(params),
+    params: buildListParams(params)
   })
 }
 
@@ -36,14 +36,14 @@ export function createIpBlacklist(data: CreateIpBlacklistDto) {
   return request({
     url: '/security/ip-blacklist',
     method: 'POST',
-    data,
+    data
   })
 }
 
 export function deleteIpBlacklist(id: string) {
   return request({
     url: `/security/ip-blacklist/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }
 
@@ -51,6 +51,6 @@ export function updateIpBlacklistStatus(id: string, data: UpdateIpBlacklistStatu
   return request({
     url: `/security/ip-blacklist/${id}/status`,
     method: 'PUT',
-    data,
+    data
   })
 }

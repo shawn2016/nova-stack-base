@@ -1,3 +1,4 @@
+import { JwtModule } from '../../common/jwt/jwt.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
@@ -21,6 +22,7 @@ import { UserService } from './user/user.service';
 
 @Module({
   imports: [
+    JwtModule,
     AuthModule,
     DeptModule,
     DataScopeModule,

@@ -49,12 +49,7 @@
   import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
   import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
-  import {
-    deleteMessage,
-    fetchMessageInbox,
-    fetchMessageSent,
-    markMessageRead,
-  } from '@/api/notice'
+  import { deleteMessage, fetchMessageInbox, fetchMessageSent, markMessageRead } from '@/api/notice'
   import type { MessageListItem } from '@nova/shared-types'
   import { ElMessageBox, ElTag } from 'element-plus'
   import SendDialog from './modules/send-dialog.vue'
@@ -63,7 +58,7 @@
 
   const MESSAGE_TABS = [
     { name: 'inbox', label: '收件箱' },
-    { name: 'sent', label: '发件箱' },
+    { name: 'sent', label: '发件箱' }
   ] as const
 
   const activeTab = ref<'inbox' | 'sent'>('inbox')
@@ -79,8 +74,8 @@
       label: '关键词',
       key: 'keyword',
       type: 'input',
-      props: { clearable: true, placeholder: '标题' },
-    },
+      props: { clearable: true, placeholder: '标题' }
+    }
   ])
 
   const { columns, columnChecks } = useTableColumns(() => [
@@ -90,9 +85,7 @@
       label: '状态',
       width: 90,
       formatter: (row: MessageListItem) =>
-        h(ElTag, { type: row.isRead ? 'success' : 'warning' }, () =>
-          row.isRead ? '已读' : '未读',
-        ),
+        h(ElTag, { type: row.isRead ? 'success' : 'warning' }, () => (row.isRead ? '已读' : '未读'))
     },
     { prop: 'createdAt', label: '时间', minWidth: 160 },
     {
@@ -107,7 +100,7 @@
             key: 'read',
             label: '标记已读',
             auth: 'system:message:list',
-            onClick: () => handleMarkRead(row),
+            onClick: () => handleMarkRead(row)
           })
         }
         items.push({
@@ -115,11 +108,11 @@
           label: '删除',
           danger: true,
           auth: 'system:message:delete',
-          onClick: () => handleDelete(row),
+          onClick: () => handleDelete(row)
         })
         return h(ArtTableActions, { items })
-      },
-    },
+      }
+    }
   ])
 
   onMounted(() => {
@@ -133,7 +126,7 @@
       const res = await api({
         current: pagination.current,
         size: pagination.size,
-        keyword: searchForm.keyword || undefined,
+        keyword: searchForm.keyword || undefined
       })
       tableData.value = res.records
       pagination.total = res.total

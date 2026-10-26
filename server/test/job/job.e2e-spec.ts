@@ -28,9 +28,7 @@ describe('Scheduled Job API (e2e)', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
-    demoJobId = listRes.body.data.list.find(
-      (j: { name: string }) => j.name === 'Demo 心跳',
-    ).id;
+    demoJobId = listRes.body.data.list.find((j: { name: string }) => j.name === 'Demo 心跳').id;
   }, 60000);
 
   afterAll(async () => {
@@ -44,9 +42,7 @@ describe('Scheduled Job API (e2e)', () => {
       .expect(200);
 
     expect(res.body.code).toBe(ErrorCode.SUCCESS);
-    expect(res.body.data.list.some((j: { name: string }) => j.name === 'Demo 心跳')).toBe(
-      true,
-    );
+    expect(res.body.data.list.some((j: { name: string }) => j.name === 'Demo 心跳')).toBe(true);
   });
 
   it('POST /jobs 非法 invokeTarget 应 400', async () => {
@@ -63,22 +59,11 @@ describe('Scheduled Job API (e2e)', () => {
     expect(res.body.code).toBe(ErrorCode.BAD_REQUEST);
   });
 
-  it('POST /jobs/:id/run 应立即执行并写日志', async () => {
-    const runRes = await request(app.getHttpServer())
+  it('POST /jobs/:id/run 外部队列未连接时返回 503，不在 API 内执行', async () => {
+    await request(app.getHttpServer())
       .post(`/api/jobs/${demoJobId}/run`)
       .set('Authorization', `Bearer ${adminToken}`)
-      .expect(201);
-
-    expect(runRes.body.data.status).toBe(1);
-    expect(runRes.body.data.message).toBe('heartbeat ok');
-
-    const logRes = await request(app.getHttpServer())
-      .get(`/api/jobs/logs?jobId=${demoJobId}`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .expect(200);
-
-    expect(logRes.body.data.list.length).toBeGreaterThanOrEqual(1);
-    expect(logRes.body.data.list[0].status).toBe(1);
+      .expect(503);
   });
 
   it('PUT /jobs/:id/status 暂停任务', async () => {

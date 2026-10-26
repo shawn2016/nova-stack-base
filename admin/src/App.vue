@@ -30,10 +30,7 @@
   }
 
   onBeforeMount(() => {
-    document.documentElement.style.setProperty(
-      '--art-content-inset',
-      `${uiConfig.contentInset}px`,
-    )
+    document.documentElement.style.setProperty('--art-content-inset', `${uiConfig.contentInset}px`)
     toggleTransition(true)
     initializeTheme()
   })

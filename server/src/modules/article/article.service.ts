@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { PaginationResult } from '@nova/shared-types';
 import { Repository } from 'typeorm';
@@ -23,9 +20,7 @@ export class ArticleService {
     status?: 0 | 1;
   }): Promise<PaginationResult<ReturnType<typeof toArticleListItem>>> {
     const { page, pageSize, status } = params;
-    const qb = this.articleRepo
-      .createQueryBuilder('article')
-      .orderBy('article.createdAt', 'DESC');
+    const qb = this.articleRepo.createQueryBuilder('article').orderBy('article.createdAt', 'DESC');
 
     if (status !== undefined) {
       qb.andWhere('article.status = :status', { status });

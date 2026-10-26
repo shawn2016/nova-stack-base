@@ -13,21 +13,9 @@ import { SmsService } from './sms.service';
 import { SmsTemplateService } from './sms-template.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      SysSmsChannelEntity,
-      SysSmsTemplateEntity,
-      SysSmsLogEntity,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([SysSmsChannelEntity, SysSmsTemplateEntity, SysSmsLogEntity])],
   controllers: [SmsController],
-  providers: [
-    SmsChannelService,
-    SmsTemplateService,
-    SmsLogService,
-    SmsService,
-    SmsProviderFactory,
-  ],
+  providers: [SmsChannelService, SmsTemplateService, SmsLogService, SmsService, SmsProviderFactory],
   exports: [SmsService],
 })
 export class SmsModule {}

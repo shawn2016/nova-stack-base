@@ -117,7 +117,7 @@ export const useUserStore = defineStore(
       } catch {
         // ignore logout API errors
       } finally {
-        resetSession()
+        logOut()
       }
     }
 

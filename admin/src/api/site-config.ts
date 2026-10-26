@@ -3,7 +3,7 @@ import type {
   PaginationResult,
   SiteConfigByKeyResult,
   SiteConfigListItem,
-  UpdateSiteConfigDto,
+  UpdateSiteConfigDto
 } from '@nova/shared-types'
 import { request } from './request'
 
@@ -19,7 +19,7 @@ function toTableResponse<T>(result: PaginationResult<T>) {
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }
 }
 
@@ -32,8 +32,8 @@ export function fetchSiteConfigList(params: SiteConfigListQuery = {}) {
       page: current,
       pageSize: size,
       ...(keyword ? { keyword } : {}),
-      ...(group ? { group } : {}),
-    },
+      ...(group ? { group } : {})
+    }
   }).then(toTableResponse)
 }
 
@@ -41,7 +41,7 @@ export function createSiteConfig(data: CreateSiteConfigDto) {
   return request<SiteConfigListItem>({
     url: '/config/items',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -49,20 +49,20 @@ export function updateSiteConfig(id: string, data: UpdateSiteConfigDto) {
   return request<SiteConfigListItem>({
     url: `/config/items/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function deleteSiteConfig(id: string) {
   return request<{ success: true }>({
     url: `/config/items/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }
 
 export function fetchSiteConfigByKey(key: string) {
   return request<SiteConfigByKeyResult>({
     url: `/config/by-key/${encodeURIComponent(key)}`,
-    method: 'GET',
+    method: 'GET'
   })
 }

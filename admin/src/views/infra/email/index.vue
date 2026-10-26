@@ -80,6 +80,7 @@
 </template>
 
 <script setup lang="ts">
+  import type { ColumnOption } from '@/types/component'
   import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
   import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
@@ -88,9 +89,13 @@
     deleteEmailTemplate,
     fetchEmailChannelList,
     fetchEmailLogList,
-    fetchEmailTemplateList,
+    fetchEmailTemplateList
   } from '@/api/email'
-  import type { EmailChannelListItem, EmailLogListItem, EmailTemplateListItem } from '@nova/shared-types'
+  import type {
+    EmailChannelListItem,
+    EmailLogListItem,
+    EmailTemplateListItem
+  } from '@nova/shared-types'
   import { ElMessageBox, ElTag } from 'element-plus'
   import EmailChannelDialog from './modules/email-channel-dialog.vue'
   import EmailTemplateDialog from './modules/email-template-dialog.vue'
@@ -103,7 +108,7 @@
   const EMAIL_TABS = [
     { name: 'channels', label: '通道' },
     { name: 'templates', label: '模板' },
-    { name: 'logs', label: '日志' },
+    { name: 'logs', label: '日志' }
   ]
 
   const activeTab = ref<EmailTab>('channels')
@@ -112,7 +117,7 @@
   const searchForms = reactive({
     channels: { keyword: '' },
     templates: { keyword: '' },
-    logs: { to: '', templateCode: '' },
+    logs: { to: '', templateCode: '' }
   })
 
   const channelVisible = ref(false)
@@ -138,8 +143,8 @@
           width: 90,
           formatter: (row: EmailChannelListItem) =>
             h(ElTag, { type: row.status === 1 ? 'success' : 'info' }, () =>
-              row.status === 1 ? '启用' : '禁用',
-            ),
+              row.status === 1 ? '启用' : '禁用'
+            )
         },
         {
           prop: 'operation',
@@ -147,10 +152,10 @@
           width: 160,
           fixed: 'right',
           formatter: (row: EmailChannelListItem) =>
-            h(ArtTableActions, { items: channelActions(row) }),
-        },
-      ],
-    },
+            h(ArtTableActions, { items: channelActions(row) })
+        }
+      ]
+    }
   })
 
   const templateTable = useTable({
@@ -168,8 +173,8 @@
           width: 90,
           formatter: (row: EmailTemplateListItem) =>
             h(ElTag, { type: row.status === 1 ? 'success' : 'info' }, () =>
-              row.status === 1 ? '启用' : '禁用',
-            ),
+              row.status === 1 ? '启用' : '禁用'
+            )
         },
         {
           prop: 'operation',
@@ -177,10 +182,10 @@
           width: 160,
           fixed: 'right',
           formatter: (row: EmailTemplateListItem) =>
-            h(ArtTableActions, { items: templateActions(row) }),
-        },
-      ],
-    },
+            h(ArtTableActions, { items: templateActions(row) })
+        }
+      ]
+    }
   })
 
   const logTable = useTable({
@@ -199,23 +204,23 @@
           width: 80,
           formatter: (row: EmailLogListItem) =>
             h(ElTag, { type: row.status === 1 ? 'success' : 'danger' }, () =>
-              row.status === 1 ? '成功' : '失败',
-            ),
+              row.status === 1 ? '成功' : '失败'
+            )
         },
         {
           prop: 'sentAt',
           label: '发送时间',
           minWidth: 160,
-          formatter: (row: EmailLogListItem) => new Date(row.sentAt).toLocaleString('zh-CN'),
-        },
-      ],
-    },
+          formatter: (row: EmailLogListItem) => new Date(row.sentAt).toLocaleString('zh-CN')
+        }
+      ]
+    }
   })
 
   const channelList = computed(() => channelTable.data.value)
   const templateList = computed(() => templateTable.data.value)
 
-  const columnChecks = computed({
+  const columnChecks = computed<ColumnOption[]>({
     get: () => {
       if (activeTab.value === 'channels') return channelTable.columnChecks.value
       if (activeTab.value === 'templates') return templateTable.columnChecks.value
@@ -225,7 +230,7 @@
       if (activeTab.value === 'channels') channelTable.columnChecks.value = value
       else if (activeTab.value === 'templates') templateTable.columnChecks.value = value
       else logTable.columnChecks.value = value
-    },
+    }
   })
 
   const currentData = computed(() => {
@@ -247,7 +252,7 @@
   })
 
   const visibleColumns = computed(() =>
-    columnChecks.value.filter((col) => col.checked !== false && col.visible !== false),
+    columnChecks.value.filter((col) => col.checked !== false && col.visible !== false)
   )
 
   const currentSearchItems = computed(() => {
@@ -257,14 +262,14 @@
           label: '收件人',
           key: 'to',
           type: 'input',
-          props: { clearable: true, placeholder: '请输入邮箱' },
+          props: { clearable: true, placeholder: '请输入邮箱' }
         },
         {
           label: '模板',
           key: 'templateCode',
           type: 'input',
-          props: { clearable: true, placeholder: '模板 Code' },
-        },
+          props: { clearable: true, placeholder: '模板 Code' }
+        }
       ]
     }
     return [
@@ -274,9 +279,9 @@
         type: 'input',
         props: {
           clearable: true,
-          placeholder: activeTab.value === 'channels' ? '通道名称' : '模板名称或 Code',
-        },
-      },
+          placeholder: activeTab.value === 'channels' ? '通道名称' : '模板名称或 Code'
+        }
+      }
     ]
   })
 
@@ -303,13 +308,13 @@
         to: searchForms.logs.to || undefined,
         templateCode: searchForms.logs.templateCode || undefined,
         current: 1,
-        size: table.pagination.size,
+        size: table.pagination.size
       })
     } else {
       table.replaceSearchParams({
         keyword: searchForms[activeTab.value].keyword || undefined,
         current: 1,
-        size: table.pagination.size,
+        size: table.pagination.size
       })
     }
     table.getData()
@@ -339,15 +344,15 @@
         key: 'edit',
         label: '编辑',
         auth: 'infra:email:channel:update',
-        onClick: () => openChannelDialog('edit', row),
+        onClick: () => openChannelDialog('edit', row)
       },
       {
         key: 'delete',
         label: '删除',
         danger: true,
         auth: 'infra:email:channel:delete',
-        onClick: () => removeChannel(row),
-      },
+        onClick: () => removeChannel(row)
+      }
     ]
   }
 
@@ -357,15 +362,15 @@
         key: 'edit',
         label: '编辑',
         auth: 'infra:email:template:update',
-        onClick: () => openTemplateDialog('edit', row),
+        onClick: () => openTemplateDialog('edit', row)
       },
       {
         key: 'delete',
         label: '删除',
         danger: true,
         auth: 'infra:email:template:delete',
-        onClick: () => removeTemplate(row),
-      },
+        onClick: () => removeTemplate(row)
+      }
     ]
   }
 

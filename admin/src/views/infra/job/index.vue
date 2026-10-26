@@ -43,13 +43,7 @@
   import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
   import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import {
-    deleteJob,
-    fetchJobHandlers,
-    fetchJobList,
-    runJob,
-    updateJobStatus,
-  } from '@/api/job'
+  import { deleteJob, fetchJobHandlers, fetchJobList, runJob, updateJobStatus } from '@/api/job'
   import type { JobHandlerInfo, JobListItem } from '@nova/shared-types'
   import { ElMessageBox, ElTag } from 'element-plus'
   import JobDialog from './modules/job-dialog.vue'
@@ -66,7 +60,7 @@
 
   const statusTag: Record<0 | 1, { type: 'info' | 'success'; label: string }> = {
     0: { type: 'info', label: '暂停' },
-    1: { type: 'success', label: '运行中' },
+    1: { type: 'success', label: '运行中' }
   }
 
   const {
@@ -77,7 +71,7 @@
     pagination,
     handleSizeChange,
     handleCurrentChange,
-    refreshData,
+    refreshData
   } = useTable({
     core: {
       apiFn: fetchJobList,
@@ -94,7 +88,7 @@
           formatter: (row: JobListItem) => {
             const tag = statusTag[row.status]
             return h(ElTag, { type: tag.type }, () => tag.label)
-          },
+          }
         },
         {
           prop: 'operation',
@@ -107,39 +101,39 @@
                 key: 'edit',
                 label: '编辑',
                 auth: 'infra:job:update',
-                onClick: () => handleAction('edit', row),
+                onClick: () => handleAction('edit', row)
               },
               {
                 key: 'toggle',
                 label: row.status === 1 ? '暂停' : '启用',
                 auth: 'infra:job:update',
-                onClick: () => handleAction('toggle', row),
+                onClick: () => handleAction('toggle', row)
               },
               {
                 key: 'run',
                 label: '执行一次',
                 auth: 'infra:job:run',
-                onClick: () => handleAction('run', row),
+                onClick: () => handleAction('run', row)
               },
               {
                 key: 'logs',
                 label: '日志',
                 auth: 'infra:job:log:list',
-                onClick: () => handleAction('logs', row),
+                onClick: () => handleAction('logs', row)
               },
               {
                 key: 'delete',
                 label: '删除',
                 danger: true,
                 auth: 'infra:job:delete',
-                onClick: () => handleAction('delete', row),
-              },
+                onClick: () => handleAction('delete', row)
+              }
             ]
             return h(ArtTableActions, { items })
-          },
-        },
-      ],
-    },
+          }
+        }
+      ]
+    }
   })
 
   onMounted(async () => {
@@ -164,7 +158,7 @@
         break
       case 'run':
         await runJob(row.id)
-        ElMessage.success('已触发执行')
+        ElMessage.success('任务已排队，请在执行日志查看结果')
         break
       case 'logs':
         logJobId.value = row.id
@@ -172,7 +166,7 @@
         break
       case 'delete':
         await ElMessageBox.confirm(`确定删除任务「${row.name}」吗？`, '删除确认', {
-          type: 'warning',
+          type: 'warning'
         })
         await deleteJob(row.id)
         ElMessage.success('删除成功')

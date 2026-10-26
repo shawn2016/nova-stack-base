@@ -24,7 +24,35 @@ export class HttpExceptionFilter implements ExceptionFilter {
       data: null,
     };
 
-    if (exception instanceof HttpException) {
+    if (
+      exception &&
+      typeof exception === 'object' &&
+      'type' in exception &&
+      typeof exception.type === 'string' &&
+      [
+        'entity.too.large',
+        'parameters.too.many',
+        'entity.parse.failed',
+        'encoding.unsupported',
+      ].includes(exception.type)
+    ) {
+      status =
+        exception.type === 'entity.parse.failed'
+          ? HttpStatus.BAD_REQUEST
+          : exception.type === 'encoding.unsupported'
+            ? HttpStatus.UNSUPPORTED_MEDIA_TYPE
+            : HttpStatus.PAYLOAD_TOO_LARGE;
+      body = {
+        code: status,
+        message:
+          status === 400
+            ? 'Invalid JSON body'
+            : status === 415
+              ? 'Unsupported encoding'
+              : 'Request body too large',
+        data: null,
+      };
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
 
@@ -56,6 +84,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
       this.logger.error(exception.message, exception.stack);
     }
 
+    if (status >= 500) {
+      body = {
+        code: this.mapStatusToCode(status),
+        message: status === 503 ? 'Service unavailable' : 'Internal server error',
+        data: null,
+      };
+    }
     response.status(status).json(body);
   }
 

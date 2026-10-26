@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import type {
   AdminInfo,
   AdminLoginResponse,
@@ -16,6 +17,7 @@ import type {
   UpdateProfileDto,
 } from '@nova/shared-types';
 import { In, Repository } from 'typeorm';
+import { PermissionCacheService } from '../../common/jwt/permission-cache.service';
 import { JwtService } from '../../common/jwt/jwt.service';
 import { toApiId } from '../../common/utils/to-api-id';
 import {
@@ -26,7 +28,6 @@ import {
   SysUserEntity,
   SysUserRoleEntity,
 } from '../../database/entities';
-import { RedisService } from '../../redis/redis.service';
 import { LoginLogService } from '../audit/login-log.service';
 import { IpBlacklistService } from '../ip-blacklist/ip-blacklist.service';
 import { OnlineSessionService } from '../online-session/online-session.service';
@@ -53,17 +54,14 @@ export class AuthService {
     @InjectRepository(SysMenuEntity)
     private readonly menuRepo: Repository<SysMenuEntity>,
     private readonly jwtService: JwtService,
-    private readonly redisService: RedisService,
     private readonly configService: ConfigService,
     private readonly loginLogService: LoginLogService,
     private readonly ipBlacklistService: IpBlacklistService,
     private readonly onlineSessionService: OnlineSessionService,
+    private readonly permissionCache: PermissionCacheService,
   ) {}
 
-  async login(
-    dto: LoginDto,
-    context: LoginContext = { ip: '' },
-  ): Promise<AdminLoginResponse> {
+  async login(dto: LoginDto, context: LoginContext = { ip: '' }): Promise<AdminLoginResponse> {
     const { ip, userAgent } = context;
 
     const blocked = await this.ipBlacklistService.isBlocked(ip);
@@ -122,7 +120,7 @@ export class AuthService {
         userAgent: userAgent ?? null,
         loginAt: new Date().toISOString(),
       },
-      tokens.expiresIn,
+      this.jwtService.refreshTtlSeconds(),
     );
 
     return {
@@ -136,7 +134,9 @@ export class AuthService {
       throw new UnauthorizedException('Missing token');
     }
 
-    const payload = await this.jwtService.verifyToken(accessToken);
+    const payload = await this.jwtService.verifyToken(accessToken, 'access');
+    if (payload.type !== 'admin') throw new UnauthorizedException('Invalid token type');
+    await this.jwtService.revokeSession(payload.sid);
     const ttl = Math.max(payload.exp - Math.floor(Date.now() / 1000), 1);
     await this.jwtService.blacklist(payload.jti, ttl);
     await this.onlineSessionService.remove(payload.jti);
@@ -145,17 +145,18 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string): Promise<TokenPair> {
-    const payload = await this.jwtService.verifyToken(refreshToken);
+    const payload = await this.jwtService.verifyToken(refreshToken, 'refresh');
 
     if (payload.type !== 'admin') {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    await this.assertRefreshTokenValid('admin', payload.sub, refreshToken);
+    await this.jwtService.assertSessionActive(payload, refreshToken);
 
     const accessToken = await this.jwtService.signAccessToken({
       userId: payload.sub,
       type: 'admin',
+      sessionId: payload.sid,
     });
 
     return {
@@ -175,10 +176,7 @@ export class AuthService {
     return this.toAdminInfo(user, roles, permissions);
   }
 
-  async updateProfile(
-    userId: string,
-    dto: UpdateProfileDto,
-  ): Promise<AdminInfo> {
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<AdminInfo> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user || user.status !== 1) {
       throw new UnauthorizedException('User not found');
@@ -196,19 +194,13 @@ export class AuthService {
     return this.toAdminInfo(saved, roles, permissions);
   }
 
-  async changePassword(
-    userId: string,
-    dto: ChangePasswordDto,
-  ): Promise<{ success: true }> {
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<{ success: true }> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user || user.status !== 1) {
       throw new UnauthorizedException('User not found');
     }
 
-    const passwordValid = await bcrypt.compare(
-      dto.oldPassword,
-      user.passwordHash,
-    );
+    const passwordValid = await bcrypt.compare(dto.oldPassword, user.passwordHash);
     if (!passwordValid) {
       throw new BadRequestException('Invalid old password');
     }
@@ -247,14 +239,13 @@ export class AuthService {
   }
 
   private async issueTokenPair(userId: string): Promise<TokenPair> {
-    const accessToken = await this.jwtService.signAccessToken({
-      userId,
-      type: 'admin',
-    });
+    const sessionId = randomUUID();
     const refreshToken = await this.jwtService.signRefreshToken({
       userId,
       type: 'admin',
+      sessionId,
     });
+    const accessToken = await this.jwtService.signAccessToken({ userId, type: 'admin', sessionId });
 
     return {
       accessToken,
@@ -267,6 +258,12 @@ export class AuthService {
     roles: string[];
     permissions: string[];
   }> {
+    return this.permissionCache.load(String(userId), () => this.queryRolesAndPermissions(userId));
+  }
+
+  private async queryRolesAndPermissions(
+    userId: string,
+  ): Promise<{ roles: string[]; permissions: string[] }> {
     const userRoles = await this.userRoleRepo.find({ where: { userId } });
     if (!userRoles.length) {
       return { roles: [], permissions: [] };
@@ -278,7 +275,7 @@ export class AuthService {
     const roleCodes = activeRoles.map((role) => role.code);
 
     const rolePermissions = await this.rolePermissionRepo.find({
-      where: { roleId: In(roleIds) },
+      where: { roleId: In(activeRoles.map((role) => role.id)) },
     });
     const permissionIds = rolePermissions.map((link) => link.permissionId);
 
@@ -294,11 +291,7 @@ export class AuthService {
     return { roles: roleCodes, permissions: permissionCodes };
   }
 
-  private toAdminInfo(
-    user: SysUserEntity,
-    roles: string[],
-    permissions: string[],
-  ): AdminInfo {
+  private toAdminInfo(user: SysUserEntity, roles: string[], permissions: string[]): AdminInfo {
     return {
       id: toApiId(user.id),
       username: user.username,
@@ -331,36 +324,8 @@ export class AuthService {
   }
 
   private getAccessExpiresInSeconds(): number {
-    const raw =
-      this.configService.get<string>('jwt.accessExpiresIn') ?? '2h';
+    const raw = this.configService.get<string>('jwt.accessExpiresIn') ?? '2h';
     return parseDurationToSeconds(raw);
-  }
-
-  private async assertRefreshTokenValid(
-    type: 'admin' | 'member',
-    userId: string,
-    refreshToken: string,
-  ): Promise<void> {
-    const skipExternal =
-      this.configService.get<boolean>('app.skipExternalServices') ?? false;
-    const redis = this.redisService.getClient();
-
-    if (!redis) {
-      if (!skipExternal) {
-        throw new UnauthorizedException('Auth service unavailable');
-      }
-      return;
-    }
-
-    const key =
-      type === 'admin'
-        ? `refresh:admin:${userId}`
-        : `refresh:member:${userId}`;
-    const stored = await redis.get(key);
-
-    if (stored !== refreshToken) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
   }
 }
 
